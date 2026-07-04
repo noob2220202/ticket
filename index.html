@@ -14,10 +14,12 @@
 <div class="top-bar">
   <div class="inner">
     <div class="auth-links" id="authLinks">
+      <a href="cart.html" class="cart-link">장바구니<span class="cart-count" id="cartCount" hidden>0</span></a>
       <a href="login.html" class="auth-guest">로그인</a>
       <a href="signup.html" class="auth-guest">회원가입</a>
       <span class="auth-user" id="authUser" hidden>
         <strong id="authUserName"></strong>님 환영합니다
+        <a href="mypage.html">마이페이지</a>
         <button type="button" id="logoutBtn">로그아웃</button>
       </span>
     </div>
@@ -100,7 +102,7 @@
       </div>
       <ul class="product-grid" id="productGrid">
 
-        <li class="product-card" data-category="lotte" data-name="롯데 50만원권">
+        <li class="product-card" data-category="lotte" data-name="롯데 50만원권" data-id="lotte-500000" data-denom="500000" data-discount="3.5">
           <div class="thumb brand-lotte">
             <span class="brand-name">LOTTE</span>
             <span class="denom">500,000<small>원</small></span>
@@ -108,10 +110,12 @@
           <div class="card-body">
             <strong class="name">롯데 50만원권</strong>
             <span class="discount">할인율 3.5%</span>
+            <span class="sale-price">482,500원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="lotte" data-name="롯데 10만원권">
+        <li class="product-card" data-category="lotte" data-name="롯데 10만원권" data-id="lotte-100000" data-denom="100000" data-discount="3.5">
           <div class="thumb brand-lotte">
             <span class="brand-name">LOTTE</span>
             <span class="denom">100,000<small>원</small></span>
@@ -119,10 +123,12 @@
           <div class="card-body">
             <strong class="name">롯데 10만원권</strong>
             <span class="discount">할인율 3.5%</span>
+            <span class="sale-price">96,500원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="shinsegae" data-name="신세계 50만원권">
+        <li class="product-card" data-category="shinsegae" data-name="신세계 50만원권" data-id="shinsegae-500000" data-denom="500000" data-discount="2.95">
           <div class="thumb brand-shinsegae">
             <span class="brand-name">SHINSEGAE</span>
             <span class="denom">500,000<small>원</small></span>
@@ -130,10 +136,12 @@
           <div class="card-body">
             <strong class="name">신세계 50만원권</strong>
             <span class="discount">할인율 2.95%</span>
+            <span class="sale-price">485,250원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="shinsegae" data-name="신세계 10만원권">
+        <li class="product-card" data-category="shinsegae" data-name="신세계 10만원권" data-id="shinsegae-100000" data-denom="100000" data-discount="2.95">
           <div class="thumb brand-shinsegae">
             <span class="brand-name">SHINSEGAE</span>
             <span class="denom">100,000<small>원</small></span>
@@ -141,10 +149,12 @@
           <div class="card-body">
             <strong class="name">신세계 10만원권</strong>
             <span class="discount">할인율 2.95%</span>
+            <span class="sale-price">97,050원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="hyundai" data-name="현대 50만원권">
+        <li class="product-card" data-category="hyundai" data-name="현대 50만원권" data-id="hyundai-500000" data-denom="500000" data-discount="3.3">
           <div class="thumb brand-hyundai">
             <span class="brand-name">HYUNDAI</span>
             <span class="denom">500,000<small>원</small></span>
@@ -152,10 +162,12 @@
           <div class="card-body">
             <strong class="name">현대 50만원권</strong>
             <span class="discount">할인율 3.3%</span>
+            <span class="sale-price">483,500원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="hyundai" data-name="현대 10만원권">
+        <li class="product-card" data-category="hyundai" data-name="현대 10만원권" data-id="hyundai-100000" data-denom="100000" data-discount="3.3">
           <div class="thumb brand-hyundai">
             <span class="brand-name">HYUNDAI</span>
             <span class="denom">100,000<small>원</small></span>
@@ -163,10 +175,12 @@
           <div class="card-body">
             <strong class="name">현대 10만원권</strong>
             <span class="discount">할인율 3.3%</span>
+            <span class="sale-price">96,700원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="galleria" data-name="갤러리아 50만원권">
+        <li class="product-card" data-category="galleria" data-name="갤러리아 50만원권" data-id="galleria-500000" data-denom="500000" data-discount="3.4">
           <div class="thumb brand-galleria">
             <span class="brand-name">GALLERIA</span>
             <span class="denom">500,000<small>원</small></span>
@@ -174,10 +188,12 @@
           <div class="card-body">
             <strong class="name">갤러리아 50만원권</strong>
             <span class="discount">할인율 3.4%</span>
+            <span class="sale-price">483,000원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="galleria" data-name="갤러리아 10만원권">
+        <li class="product-card" data-category="galleria" data-name="갤러리아 10만원권" data-id="galleria-100000" data-denom="100000" data-discount="3.4">
           <div class="thumb brand-galleria">
             <span class="brand-name">GALLERIA</span>
             <span class="denom">100,000<small>원</small></span>
@@ -185,10 +201,12 @@
           <div class="card-body">
             <strong class="name">갤러리아 10만원권</strong>
             <span class="discount">할인율 3.4%</span>
+            <span class="sale-price">96,600원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="guk" data-name="국민관광 10만원권">
+        <li class="product-card" data-category="guk" data-name="국민관광 10만원권" data-id="guk-100000" data-denom="100000" data-discount="3">
           <div class="thumb brand-guk">
             <span class="brand-name">국민관광</span>
             <span class="denom">100,000<small>원</small></span>
@@ -196,10 +214,12 @@
           <div class="card-body">
             <strong class="name">국민관광 10만원권</strong>
             <span class="discount">할인율 3%</span>
+            <span class="sale-price">97,000원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="keumkang" data-name="금강 10만원권">
+        <li class="product-card" data-category="keumkang" data-name="금강 10만원권" data-id="keumkang-100000" data-denom="100000" data-discount="26">
           <div class="thumb brand-keumkang">
             <span class="brand-name">금강제화</span>
             <span class="denom">100,000<small>원</small></span>
@@ -207,10 +227,12 @@
           <div class="card-body">
             <strong class="name">금강 10만원권</strong>
             <span class="discount">할인율 26%</span>
+            <span class="sale-price">74,000원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
-        <li class="product-card" data-category="keumkang" data-name="금강 5만원권">
+        <li class="product-card" data-category="keumkang" data-name="금강 5만원권" data-id="keumkang-50000" data-denom="50000" data-discount="26">
           <div class="thumb brand-keumkang">
             <span class="brand-name">금강제화</span>
             <span class="denom">50,000<small>원</small></span>
@@ -218,6 +240,8 @@
           <div class="card-body">
             <strong class="name">금강 5만원권</strong>
             <span class="discount">할인율 26%</span>
+            <span class="sale-price">37,000원</span>
+            <button type="button" class="btn btn-buy" data-add-to-cart>구매하기</button>
           </div>
         </li>
 
@@ -232,11 +256,11 @@
     <div class="footer-top">
       <span class="footer-logo">카카오상품권</span>
       <ul class="util-menu">
-        <li><a href="#">홈</a></li>
-        <li><a href="#">회사소개</a></li>
-        <li><a href="#">이용약관</a></li>
-        <li><a href="#">개인정보처리방침</a></li>
-        <li><a href="#">이용안내</a></li>
+        <li><a href="index.html">홈</a></li>
+        <li><a href="about.html">회사소개</a></li>
+        <li><a href="terms.html">이용약관</a></li>
+        <li><a href="privacy.html">개인정보처리방침</a></li>
+        <li><a href="guide.html">이용안내</a></li>
       </ul>
     </div>
     <dl class="biz-info">
@@ -253,6 +277,7 @@
 </footer>
 
 <script src="js/auth.js"></script>
+<script src="js/cart.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

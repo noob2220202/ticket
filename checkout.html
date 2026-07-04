@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주문서 작성 - 카카오상품권</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="inner">
+    <div class="auth-links" id="authLinks">
+      <a href="cart.html" class="cart-link">장바구니<span class="cart-count" id="cartCount" hidden>0</span></a>
+      <a href="login.html" class="auth-guest">로그인</a>
+      <a href="signup.html" class="auth-guest">회원가입</a>
+      <span class="auth-user" id="authUser" hidden>
+        <strong id="authUserName"></strong>님 환영합니다
+        <a href="mypage.html">마이페이지</a>
+        <button type="button" id="logoutBtn">로그아웃</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="inner">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">K</span>
+      카카오상품권
+    </a>
+  </div>
+</header>
+
+<main class="page-section">
+  <div class="inner">
+    <div class="section-head">
+      <h1 class="section-title">주문서 작성</h1>
+      <p class="section-sub">주문 내용을 확인하고 수령 정보를 입력해주세요</p>
+    </div>
+
+    <div class="checkout-layout">
+      <section class="checkout-block">
+        <h2>주문 상품</h2>
+        <table class="cart-table" id="orderTable">
+          <thead>
+            <tr>
+              <th>상품권</th>
+              <th>판매가</th>
+              <th>수량</th>
+              <th>소계</th>
+            </tr>
+          </thead>
+          <tbody id="orderBody"></tbody>
+        </table>
+        <div class="cart-total-line">
+          총 결제 예정 금액 <strong id="orderTotal">0원</strong>
+        </div>
+      </section>
+
+      <section class="checkout-block">
+        <h2>수령 정보</h2>
+        <form id="checkoutForm" novalidate>
+          <div class="form-group">
+            <label for="buyerName">받는 분 성함</label>
+            <input type="text" id="buyerName" required>
+          </div>
+          <div class="form-group">
+            <label for="buyerPhone">연락처</label>
+            <input type="tel" id="buyerPhone" placeholder="010-0000-0000" required>
+          </div>
+          <div class="form-group">
+            <label for="buyerEmail">이메일</label>
+            <input type="email" id="buyerEmail" required>
+          </div>
+          <div class="form-group">
+            <label for="deliveryMethod">상품권 수령 방법</label>
+            <select id="deliveryMethod">
+              <option value="kakao">카카오톡 전송</option>
+              <option value="sms">문자(SMS) 전송</option>
+              <option value="email">이메일 전송</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="memo">요청사항 (선택)</label>
+            <input type="text" id="memo" placeholder="전달 시 참고할 내용을 입력해주세요">
+          </div>
+
+          <div class="notice-box">
+            <strong>결제 안내</strong>
+            <p>주문 접수 후 담당자가 남겨주신 연락처로 결제 방법(계좌이체 등)을 안내드립니다. 본 페이지에서는 온라인 결제가 진행되지 않습니다.</p>
+          </div>
+
+          <p class="form-message" id="formMessage" hidden></p>
+
+          <button type="submit" class="btn btn-primary btn-block">주문 접수하기</button>
+        </form>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <div class="footer-top">
+      <span class="footer-logo">카카오상품권</span>
+      <ul class="util-menu">
+        <li><a href="index.html">홈</a></li>
+        <li><a href="about.html">회사소개</a></li>
+        <li><a href="terms.html">이용약관</a></li>
+        <li><a href="privacy.html">개인정보처리방침</a></li>
+        <li><a href="guide.html">이용안내</a></li>
+      </ul>
+    </div>
+    <p class="copyright">Copyright &copy; 카카오상품권. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="js/auth.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/checkout.js"></script>
+</body>
+</html>

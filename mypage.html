@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>로그인 - 카카오상품권</title>
+<title>마이페이지 - 카카오상품권</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="css/style.css">
@@ -34,28 +34,34 @@
   </div>
 </header>
 
-<main class="auth-page">
-  <div class="auth-card">
-    <h1>로그인</h1>
-    <p class="auth-sub">아이디와 비밀번호를 입력해주세요.</p>
+<main class="page-section">
+  <div class="inner">
+    <div class="section-head">
+      <h1 class="section-title">마이페이지</h1>
+      <p class="section-sub">회원 정보와 주문내역을 확인할 수 있습니다</p>
+    </div>
 
-    <form id="loginForm" novalidate>
-      <div class="form-group">
-        <label for="userId">아이디</label>
-        <input type="text" id="userId" name="userId" required>
-      </div>
+    <section class="checkout-block profile-block">
+      <h2>회원 정보</h2>
+      <dl class="profile-info" id="profileInfo"></dl>
+    </section>
 
-      <div class="form-group">
-        <label for="password">비밀번호</label>
-        <input type="password" id="password" name="password" required>
-      </div>
-
-      <p class="form-message" id="formMessage" hidden></p>
-
-      <button type="submit" class="btn btn-primary btn-block">로그인</button>
-    </form>
-
-    <p class="auth-switch">아직 계정이 없으신가요? <a href="signup.html">회원가입</a></p>
+    <section class="checkout-block">
+      <h2>주문내역</h2>
+      <table class="cart-table" id="orderHistoryTable">
+        <thead>
+          <tr>
+            <th>주문번호</th>
+            <th>주문일시</th>
+            <th>상품권</th>
+            <th>결제 예정 금액</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody id="orderHistoryBody"></tbody>
+      </table>
+      <p class="empty-state" id="orderHistoryEmpty" hidden>아직 주문내역이 없습니다.</p>
+    </section>
   </div>
 </main>
 
@@ -77,6 +83,6 @@
 
 <script src="js/auth.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/login.js"></script>
+<script src="js/mypage.js"></script>
 </body>
 </html>

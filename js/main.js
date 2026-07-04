@@ -51,3 +51,26 @@ if (categoryList) {
 if (searchInput) {
   searchInput.addEventListener('input', applyFilters);
 }
+
+if (productGrid) {
+  productGrid.querySelectorAll('.product-card').forEach((card) => {
+    const buyBtn = card.querySelector('[data-add-to-cart]');
+    if (!buyBtn) return;
+    buyBtn.addEventListener('click', () => {
+      const denom = Number(card.dataset.denom);
+      const discount = Number(card.dataset.discount);
+      addToCart(
+        {
+          id: card.dataset.id,
+          name: card.dataset.name,
+          category: card.dataset.category,
+          denom,
+          discount,
+          price: salePrice(denom, discount),
+        },
+        1
+      );
+      window.location.href = 'cart.html';
+    });
+  });
+}

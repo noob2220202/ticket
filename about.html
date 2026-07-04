@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>로그인 - 카카오상품권</title>
+<title>회사소개 - 카카오상품권</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="css/style.css">
@@ -34,28 +34,34 @@
   </div>
 </header>
 
-<main class="auth-page">
-  <div class="auth-card">
-    <h1>로그인</h1>
-    <p class="auth-sub">아이디와 비밀번호를 입력해주세요.</p>
+<main class="page-section">
+  <div class="inner content-page">
+    <div class="section-head">
+      <h1 class="section-title">회사소개</h1>
+      <p class="section-sub">믿을 수 있는 상품권 거래, 카카오상품권이 함께합니다</p>
+    </div>
 
-    <form id="loginForm" novalidate>
-      <div class="form-group">
-        <label for="userId">아이디</label>
-        <input type="text" id="userId" name="userId" required>
-      </div>
+    <article class="content-body">
+      <p>카카오상품권은 롯데, 신세계, 현대, 갤러리아 백화점 상품권을 비롯해 국민관광상품권, 금강제화상품권, 주유상품권 등 다양한 상품권을 가장 좋은 조건으로 판매하는 상품권 전문 쇼핑몰입니다.</p>
+      <p>매일 변동되는 실시간 시세를 반영하여 합리적인 할인율로 상품권을 제공해드리며, 접수 후 빠른 처리로 고객님이 원하시는 시점에 상품권을 받아보실 수 있도록 노력하고 있습니다.</p>
 
-      <div class="form-group">
-        <label for="password">비밀번호</label>
-        <input type="password" id="password" name="password" required>
-      </div>
+      <h2>이런 점이 다릅니다</h2>
+      <ul class="content-list">
+        <li>매일 갱신되는 실시간 할인율로 항상 합리적인 가격을 안내해드립니다.</li>
+        <li>정식 통신판매업 신고를 마친 사업자로서 안심하고 거래하실 수 있습니다.</li>
+        <li>전화 상담을 통해 궁금하신 사항을 빠르게 안내해드립니다.</li>
+      </ul>
 
-      <p class="form-message" id="formMessage" hidden></p>
-
-      <button type="submit" class="btn btn-primary btn-block">로그인</button>
-    </form>
-
-    <p class="auth-switch">아직 계정이 없으신가요? <a href="signup.html">회원가입</a></p>
+      <h2>회사 정보</h2>
+      <dl class="biz-info">
+        <div><dt>상호</dt><dd>카카오상품권</dd></div>
+        <div><dt>대표자</dt><dd>이정예, 항상태</dd></div>
+        <div><dt>사업자 등록번호</dt><dd>151-93-01314</dd></div>
+        <div><dt>통신판매업 신고</dt><dd>2020-충주-235</dd></div>
+        <div><dt>연락처</dt><dd><a href="tel:010-5857-5196">010-5857-5196</a></dd></div>
+        <div><dt>주소</dt><dd>충청북도 충주시 무학1길 15, 1동(봉방동)</dd></div>
+      </dl>
+    </article>
   </div>
 </main>
 
@@ -77,6 +83,5 @@
 
 <script src="js/auth.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/login.js"></script>
 </body>
 </html>

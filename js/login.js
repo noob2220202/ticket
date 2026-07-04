@@ -23,7 +23,10 @@ loginForm.addEventListener('submit', (e) => {
   setSession({ userId: member.userId, name: member.name });
   showMessage('로그인되었습니다.', 'success');
 
+  const redirect = sessionStorage.getItem('kk_redirect');
+  sessionStorage.removeItem('kk_redirect');
+
   setTimeout(() => {
-    window.location.href = 'index.html';
+    window.location.href = redirect || 'index.html';
   }, 600);
 });
