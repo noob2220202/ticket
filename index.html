@@ -11,14 +11,27 @@
 </head>
 <body>
 
+<div class="top-bar">
+  <div class="inner">
+    <div class="auth-links" id="authLinks">
+      <a href="login.html" class="auth-guest">로그인</a>
+      <a href="signup.html" class="auth-guest">회원가입</a>
+      <span class="auth-user" id="authUser" hidden>
+        <strong id="authUserName"></strong>님 환영합니다
+        <button type="button" id="logoutBtn">로그아웃</button>
+      </span>
+    </div>
+  </div>
+</div>
+
 <header class="site-header" id="siteHeader">
   <div class="inner">
     <a href="/" class="logo">
       <span class="logo-mark">K</span>
       카카오상품권
     </a>
-    <form class="search-form" onsubmit="return false;">
-      <input type="text" placeholder="상품권을 검색해보세요" aria-label="검색">
+    <form class="search-form" id="searchForm" onsubmit="return false;">
+      <input type="text" id="searchInput" placeholder="상품권을 검색해보세요" aria-label="검색">
       <button type="submit" aria-label="검색하기">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
@@ -36,14 +49,15 @@
       전체 카테고리 <span class="arrow">&#9662;</span>
     </button>
     <ul class="category-list" id="categoryList">
-      <li><a href="#">롯데 백화점</a></li>
-      <li><a href="#">신세계 백화점</a></li>
-      <li><a href="#">현대 백화점</a></li>
-      <li><a href="#">갤러리아 백화점</a></li>
-      <li><a href="#">국민관광</a></li>
-      <li><a href="#">금강제화</a></li>
-      <li><a href="#">주유상품권</a></li>
-      <li><a href="#">기타 상품권</a></li>
+      <li><a href="#" class="active" data-category="all">전체</a></li>
+      <li><a href="#" data-category="lotte">롯데 백화점</a></li>
+      <li><a href="#" data-category="shinsegae">신세계 백화점</a></li>
+      <li><a href="#" data-category="hyundai">현대 백화점</a></li>
+      <li><a href="#" data-category="galleria">갤러리아 백화점</a></li>
+      <li><a href="#" data-category="guk">국민관광</a></li>
+      <li><a href="#" data-category="keumkang">금강제화</a></li>
+      <li><a href="#" data-category="oil">주유상품권</a></li>
+      <li><a href="#" data-category="etc">기타 상품권</a></li>
     </ul>
   </div>
 </nav>
@@ -84,9 +98,9 @@
         <h2 class="section-title">오늘의 판매 상품권</h2>
         <p class="section-sub">인기 백화점 상품권을 가장 좋은 조건으로 만나보세요</p>
       </div>
-      <ul class="product-grid">
+      <ul class="product-grid" id="productGrid">
 
-        <li class="product-card">
+        <li class="product-card" data-category="lotte" data-name="롯데 50만원권">
           <div class="thumb brand-lotte">
             <span class="brand-name">LOTTE</span>
             <span class="denom">500,000<small>원</small></span>
@@ -97,7 +111,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="lotte" data-name="롯데 10만원권">
           <div class="thumb brand-lotte">
             <span class="brand-name">LOTTE</span>
             <span class="denom">100,000<small>원</small></span>
@@ -108,7 +122,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="shinsegae" data-name="신세계 50만원권">
           <div class="thumb brand-shinsegae">
             <span class="brand-name">SHINSEGAE</span>
             <span class="denom">500,000<small>원</small></span>
@@ -119,7 +133,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="shinsegae" data-name="신세계 10만원권">
           <div class="thumb brand-shinsegae">
             <span class="brand-name">SHINSEGAE</span>
             <span class="denom">100,000<small>원</small></span>
@@ -130,7 +144,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="hyundai" data-name="현대 50만원권">
           <div class="thumb brand-hyundai">
             <span class="brand-name">HYUNDAI</span>
             <span class="denom">500,000<small>원</small></span>
@@ -141,7 +155,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="hyundai" data-name="현대 10만원권">
           <div class="thumb brand-hyundai">
             <span class="brand-name">HYUNDAI</span>
             <span class="denom">100,000<small>원</small></span>
@@ -152,7 +166,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="galleria" data-name="갤러리아 50만원권">
           <div class="thumb brand-galleria">
             <span class="brand-name">GALLERIA</span>
             <span class="denom">500,000<small>원</small></span>
@@ -163,7 +177,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="galleria" data-name="갤러리아 10만원권">
           <div class="thumb brand-galleria">
             <span class="brand-name">GALLERIA</span>
             <span class="denom">100,000<small>원</small></span>
@@ -174,7 +188,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="guk" data-name="국민관광 10만원권">
           <div class="thumb brand-guk">
             <span class="brand-name">국민관광</span>
             <span class="denom">100,000<small>원</small></span>
@@ -185,7 +199,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="keumkang" data-name="금강 10만원권">
           <div class="thumb brand-keumkang">
             <span class="brand-name">금강제화</span>
             <span class="denom">100,000<small>원</small></span>
@@ -196,7 +210,7 @@
           </div>
         </li>
 
-        <li class="product-card">
+        <li class="product-card" data-category="keumkang" data-name="금강 5만원권">
           <div class="thumb brand-keumkang">
             <span class="brand-name">금강제화</span>
             <span class="denom">50,000<small>원</small></span>
@@ -208,6 +222,7 @@
         </li>
 
       </ul>
+      <p class="empty-state" id="emptyState" hidden>해당 카테고리에는 아직 등록된 상품권이 없습니다.</p>
     </div>
   </section>
 </main>
@@ -237,6 +252,7 @@
   </div>
 </footer>
 
+<script src="js/auth.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
