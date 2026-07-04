@@ -151,22 +151,53 @@ a {
 
 .thumb {
   position: relative;
-  aspect-ratio: 1 / 1;
-  background: #e6e6e6;
-  border: 1px solid #dfdfdf;
-  border-radius: 4px;
+  aspect-ratio: 1.6 / 1;
+  border-radius: 8px;
   margin-bottom: 10px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
 }
 
-.thumb::after {
-  content: attr(data-label);
-  font-size: 14px;
-  color: #77797d;
-  font-weight: 600;
+.thumb::before {
+  content: "상품권";
+  position: absolute;
+  right: -10px;
+  bottom: -14px;
+  font-size: 34px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.18);
+  white-space: nowrap;
 }
+
+.brand-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.denom {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.denom small {
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+.brand-lotte { background: linear-gradient(135deg, #c8102e, #7c0a1c); }
+.brand-shinsegae { background: linear-gradient(135deg, #4a5164, #22252e); }
+.brand-hyundai { background: linear-gradient(135deg, #005bac, #002f5c); }
+.brand-galleria { background: linear-gradient(135deg, #7b5ea7, #4a3672); }
+.brand-guk { background: linear-gradient(135deg, #008bcc, #005580); }
+.brand-keumkang { background: linear-gradient(135deg, #b8860b, #6e4e07); }
 
 .product-card .name {
   display: block;
