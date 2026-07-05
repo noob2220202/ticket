@@ -74,7 +74,8 @@ if (productCount === 0) {
     { id: 'lotte-100000', category: 'lotte', name: '롯데 10만원권', denom: 100000, discount: 3.5, brandClass: 'brand-lotte', brandLabel: 'LOTTE' },
     { id: 'shinsegae-500000', category: 'shinsegae', name: '신세계 50만원권', denom: 500000, discount: 2.95, brandClass: 'brand-shinsegae', brandLabel: 'SHINSEGAE' },
     { id: 'shinsegae-100000', category: 'shinsegae', name: '신세계 10만원권', denom: 100000, discount: 2.95, brandClass: 'brand-shinsegae', brandLabel: 'SHINSEGAE' },
-    { id: 'hyundai-500000', category: 'hyundai', name: '현대 50만원권', denom: 500000, discount: 3.3, brandClass: 'brand-hyundai', brandLabel: 'HYUNDAI' },
+    // Hyundai 500,000 is listed at 484,000 (not the 483,500 the 3.3% rate would compute) - kept as an explicit override to match the real posted price.
+    { id: 'hyundai-500000', category: 'hyundai', name: '현대 50만원권', denom: 500000, discount: 3.3, price: 484000, brandClass: 'brand-hyundai', brandLabel: 'HYUNDAI' },
     { id: 'hyundai-100000', category: 'hyundai', name: '현대 10만원권', denom: 100000, discount: 3.3, brandClass: 'brand-hyundai', brandLabel: 'HYUNDAI' },
     { id: 'galleria-500000', category: 'galleria', name: '갤러리아 50만원권', denom: 500000, discount: 3.4, brandClass: 'brand-galleria', brandLabel: 'GALLERIA' },
     { id: 'galleria-100000', category: 'galleria', name: '갤러리아 10만원권', denom: 100000, discount: 3.4, brandClass: 'brand-galleria', brandLabel: 'GALLERIA' },
@@ -91,7 +92,7 @@ if (productCount === 0) {
         name: p.name,
         denom: p.denom,
         discount: p.discount,
-        price: salePrice(p.denom, p.discount),
+        price: p.price !== undefined ? p.price : salePrice(p.denom, p.discount),
         brandClass: p.brandClass,
         brandLabel: p.brandLabel,
         sortOrder: i,
@@ -101,5 +102,11 @@ if (productCount === 0) {
 
   insertAll(products);
 }
+
+// Corrections for databases that were already seeded before a price fix -
+// re-applied on every startup so existing deployments pick them up too.
+const priceCorrections = [{ id: 'hyundai-500000', price: 484000 }];
+const correctPrice = db.prepare('UPDATE products SET price = ? WHERE id = ? AND price != ?');
+priceCorrections.forEach((c) => correctPrice.run(c.price, c.id, c.price));
 
 module.exports = db;
