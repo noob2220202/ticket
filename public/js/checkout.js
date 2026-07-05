@@ -1,9 +1,3 @@
-const session = getSession();
-if (!session) {
-  sessionStorage.setItem('kk_redirect', 'checkout.html');
-  window.location.href = 'login.html';
-}
-
 const cart = getCart();
 if (cart.length === 0) {
   window.location.href = 'cart.html';
@@ -30,12 +24,10 @@ function renderOrder() {
   document.getElementById('orderTotal').textContent = formatWon(cartTotal());
 }
 
-function prefillBuyer() {
-  const member = findMember(session.userId);
-  if (!member) return;
-  document.getElementById('buyerName').value = member.name || '';
-  document.getElementById('buyerPhone').value = member.phone || '';
-  document.getElementById('buyerEmail').value = member.email || '';
+function prefillBuyer(session) {
+  document.getElementById('buyerName').value = session.name || '';
+  document.getElementById('buyerPhone').value = session.phone || '';
+  document.getElementById('buyerEmail').value = session.email || '';
 }
 
 const checkoutForm = document.getElementById('checkoutForm');
@@ -47,7 +39,7 @@ function showMessage(text, type) {
   formMessage.className = 'form-message ' + type;
 }
 
-checkoutForm.addEventListener('submit', (e) => {
+checkoutForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   if (!checkoutForm.checkValidity()) {
@@ -55,13 +47,11 @@ checkoutForm.addEventListener('submit', (e) => {
     return;
   }
 
-  const order = {
-    id: 'ORD' + Date.now(),
-    userId: session.userId,
-    createdAt: new Date().toISOString(),
-    status: '접수완료',
-    items: cart,
-    total: cartTotal(),
+  const submitBtn = checkoutForm.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
+
+  const payload = {
+    items: cart.map((item) => ({ id: item.id, qty: item.qty })),
     buyer: {
       name: document.getElementById('buyerName').value.trim(),
       phone: document.getElementById('buyerPhone').value.trim(),
@@ -71,18 +61,33 @@ checkoutForm.addEventListener('submit', (e) => {
     },
   };
 
-  saveOrder(order);
-  clearCart();
+  try {
+    const order = await api.createOrder(payload);
+    clearCart();
+    sessionStorage.setItem('kk_last_order', order.id);
+    showMessage('주문이 접수되었습니다. 잠시 후 이동합니다.', 'success');
 
-  sessionStorage.setItem('kk_last_order', order.id);
-  showMessage('주문이 접수되었습니다. 잠시 후 이동합니다.', 'success');
-
-  setTimeout(() => {
-    window.location.href = 'order-complete.html';
-  }, 700);
+    setTimeout(() => {
+      window.location.href = 'order-complete.html';
+    }, 700);
+  } catch (err) {
+    if (err.status === 401) {
+      sessionStorage.setItem('kk_redirect', 'checkout.html');
+      window.location.href = 'login.html';
+      return;
+    }
+    showMessage(err.message, 'error');
+    submitBtn.disabled = false;
+  }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const session = await renderAuthUI();
+  if (!session) {
+    sessionStorage.setItem('kk_redirect', 'checkout.html');
+    window.location.href = 'login.html';
+    return;
+  }
   renderOrder();
-  prefillBuyer();
+  prefillBuyer(session);
 });

@@ -7,7 +7,7 @@ function showMessage(text, type) {
   formMessage.className = 'form-message ' + type;
 }
 
-signupForm.addEventListener('submit', (e) => {
+signupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const userId = document.getElementById('userId').value.trim();
@@ -33,18 +33,18 @@ signupForm.addEventListener('submit', (e) => {
     return;
   }
 
-  if (findMember(userId)) {
-    showMessage('이미 사용 중인 아이디입니다.', 'error');
-    return;
+  const submitBtn = signupForm.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
+
+  try {
+    await api.signup({ userId, password, name, phone, email });
+    showMessage('가입이 완료되었습니다. 로그인 페이지로 이동합니다.', 'success');
+
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1200);
+  } catch (err) {
+    showMessage(err.message, 'error');
+    submitBtn.disabled = false;
   }
-
-  const members = getMembers();
-  members.push({ userId, password, name, phone, email });
-  saveMembers(members);
-
-  showMessage('가입이 완료되었습니다. 로그인 페이지로 이동합니다.', 'success');
-
-  setTimeout(() => {
-    window.location.href = 'login.html';
-  }, 1200);
 });

@@ -64,9 +64,17 @@ if (clearCartBtn) {
 
 const orderBtn = document.getElementById('orderBtn');
 if (orderBtn) {
-  orderBtn.addEventListener('click', () => {
+  orderBtn.addEventListener('click', async () => {
     if (getCart().length === 0) return;
-    const session = getSession();
+    orderBtn.disabled = true;
+
+    let session = null;
+    try {
+      session = await api.getMe();
+    } catch (e) {
+      session = null;
+    }
+
     if (!session) {
       sessionStorage.setItem('kk_redirect', 'checkout.html');
       window.location.href = 'login.html';

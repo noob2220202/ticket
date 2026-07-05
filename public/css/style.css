@@ -1,22 +1,52 @@
 :root {
-  --color-primary: #6c5ce7;
-  --color-primary-dark: #4834b0;
-  --color-accent: #00b894;
-  --color-text: #1a1a2e;
+  --color-primary: #6d5bf5;
+  --color-primary-dark: #4634b8;
+  --color-primary-light: #8f7ff9;
+  --color-accent: #e8b33d;
+  --color-success: #12b886;
+  --color-danger: #e0335d;
+  --color-text: #17172b;
   --color-text-muted: #6b7280;
   --color-border: #eceef1;
   --color-surface: #ffffff;
-  --color-bg: #f7f7fb;
+  --color-bg: #f6f6fc;
   --radius-lg: 20px;
   --radius-md: 14px;
-  --radius-sm: 8px;
-  --shadow-card: 0 2px 8px rgba(26, 26, 46, 0.06);
-  --shadow-card-hover: 0 16px 32px rgba(26, 26, 46, 0.12);
+  --radius-sm: 10px;
+  --shadow-card: 0 2px 10px rgba(23, 23, 43, 0.05);
+  --shadow-card-hover: 0 20px 40px rgba(23, 23, 43, 0.14);
+  --shadow-pop: 0 12px 28px rgba(70, 52, 184, 0.22);
   --container: 1160px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #8f7ff9;
+    --color-primary-dark: #6d5bf5;
+    --color-primary-light: #ab9ffb;
+    --color-accent: #f0c25e;
+    --color-success: #35d6a3;
+    --color-danger: #ff6b8e;
+    --color-text: #eef0fa;
+    --color-text-muted: #9a9ec2;
+    --color-border: #2a2b45;
+    --color-surface: #1c1d33;
+    --color-bg: #131425;
+    --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.28);
+    --shadow-card-hover: 0 20px 40px rgba(0, 0, 0, 0.45);
+    --shadow-pop: 0 12px 28px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -25,6 +55,7 @@ body {
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 a {
@@ -36,6 +67,17 @@ ul {
   list-style: none;
 }
 
+::selection {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .inner {
   max-width: var(--container);
   margin: 0 auto;
@@ -45,7 +87,7 @@ ul {
 /* top bar */
 
 .top-bar {
-  background: #f1f1f7;
+  background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -133,7 +175,7 @@ ul {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(255, 255, 255, 0.9);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--color-border);
 }
@@ -259,9 +301,9 @@ ul {
 
 .banner {
   position: relative;
-  background: linear-gradient(160deg, #7c6ef2, #4834b0);
+  background: linear-gradient(155deg, #7c6ef2 0%, #5d4bd6 45%, #3b2d95 100%);
   color: #fff;
-  padding: 72px 0 56px;
+  padding: 80px 0 60px;
   overflow: hidden;
   text-align: center;
 }
@@ -271,21 +313,21 @@ ul {
   content: "";
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
 }
 
 .banner::before {
-  width: 420px;
-  height: 420px;
-  top: -220px;
-  right: -120px;
+  width: 460px;
+  height: 460px;
+  top: -240px;
+  right: -140px;
 }
 
 .banner::after {
-  width: 280px;
-  height: 280px;
-  bottom: -160px;
-  left: -80px;
+  width: 300px;
+  height: 300px;
+  bottom: -170px;
+  left: -90px;
 }
 
 .banner .inner {
@@ -294,24 +336,26 @@ ul {
 
 .badge {
   display: inline-block;
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   font-size: 13px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  letter-spacing: -0.01em;
 }
 
 .banner h1 {
   margin: 0 0 14px;
-  font-size: 34px;
+  font-size: 36px;
   line-height: 1.35;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .banner p {
-  margin: 0 0 28px;
+  margin: 0 0 30px;
   font-size: 15px;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -325,17 +369,18 @@ ul {
 .btn {
   display: inline-flex;
   align-items: center;
-  padding: 12px 24px;
+  padding: 12px 26px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 700;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  letter-spacing: -0.01em;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background-color 0.2s ease, opacity 0.2s ease;
 }
 
 .btn-primary {
   background: #fff;
   color: var(--color-primary-dark);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .btn-ghost {
@@ -346,6 +391,16 @@ ul {
 
 .btn:hover {
   transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 /* highlight strip */
@@ -419,15 +474,35 @@ ul {
 
 .product-card {
   background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 12px;
   box-shadow: var(--shadow-card);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s ease;
+  animation: card-in 0.4s var(--ease) both;
 }
 
 .product-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-card-hover);
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card {
+    animation: none;
+  }
 }
 
 .thumb {
@@ -503,16 +578,17 @@ ul {
 .product-card .discount {
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-accent);
-  background: rgba(0, 184, 148, 0.1);
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
   padding: 4px 10px;
   border-radius: 999px;
 }
 
 .product-card .sale-price {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--color-text);
+  letter-spacing: -0.01em;
 }
 
 .btn-buy {
@@ -524,6 +600,7 @@ ul {
   border: 0;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-primary) 35%, transparent);
 }
 
 .btn-buy:hover {
@@ -544,6 +621,13 @@ ul {
 }
 
 .empty-state {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.loading-state {
   text-align: center;
   padding: 60px 0;
   color: var(--color-text-muted);
@@ -669,19 +753,24 @@ ul {
   margin-bottom: 6px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 11px 14px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
   font-size: 14px;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
 .form-check {
@@ -707,13 +796,13 @@ ul {
 }
 
 .form-message.error {
-  background: rgba(224, 51, 93, 0.1);
-  color: #c81e4c;
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
 }
 
 .form-message.success {
-  background: rgba(0, 184, 148, 0.1);
-  color: #00926f;
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+  color: var(--color-success);
 }
 
 .btn-block {
@@ -783,8 +872,17 @@ ul {
   padding: 6px 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
   font-family: inherit;
   font-size: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.qty-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+  outline: none;
 }
 
 .remove-btn {
@@ -799,7 +897,7 @@ ul {
 }
 
 .remove-btn:hover {
-  color: #c81e4c;
+  color: var(--color-danger);
 }
 
 .cart-summary {

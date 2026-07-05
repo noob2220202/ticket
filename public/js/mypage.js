@@ -1,36 +1,33 @@
-const mypageSession = getSession();
-if (!mypageSession) {
-  sessionStorage.setItem('kk_redirect', 'mypage.html');
-  window.location.href = 'login.html';
-}
-
 function formatWon(n) {
   return n.toLocaleString('ko-KR') + '원';
 }
 
 function formatDate(iso) {
-  const d = new Date(iso);
+  const d = new Date(iso.replace(' ', 'T') + 'Z');
   return d.toLocaleString('ko-KR');
 }
 
-function renderProfile() {
-  const member = findMember(mypageSession.userId);
+function renderProfile(session) {
   const profileInfo = document.getElementById('profileInfo');
-  if (!member) return;
-
   profileInfo.innerHTML = `
-    <div><dt>아이디</dt><dd>${member.userId}</dd></div>
-    <div><dt>이름</dt><dd>${member.name}</dd></div>
-    <div><dt>휴대폰번호</dt><dd>${member.phone}</dd></div>
-    <div><dt>이메일</dt><dd>${member.email}</dd></div>
+    <div><dt>아이디</dt><dd>${session.userId}</dd></div>
+    <div><dt>이름</dt><dd>${session.name}</dd></div>
+    <div><dt>휴대폰번호</dt><dd>${session.phone}</dd></div>
+    <div><dt>이메일</dt><dd>${session.email}</dd></div>
   `;
 }
 
-function renderOrderHistory() {
-  const orders = getOrders().filter((o) => o.userId === mypageSession.userId);
+async function renderOrderHistory() {
   const body = document.getElementById('orderHistoryBody');
   const table = document.getElementById('orderHistoryTable');
   const empty = document.getElementById('orderHistoryEmpty');
+
+  let orders = [];
+  try {
+    orders = await api.getOrders();
+  } catch (e) {
+    orders = [];
+  }
 
   if (orders.length === 0) {
     table.hidden = true;
@@ -56,7 +53,13 @@ function renderOrderHistory() {
     .join('');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderProfile();
+document.addEventListener('DOMContentLoaded', async () => {
+  const session = await renderAuthUI();
+  if (!session) {
+    sessionStorage.setItem('kk_redirect', 'mypage.html');
+    window.location.href = 'login.html';
+    return;
+  }
+  renderProfile(session);
   renderOrderHistory();
 });
