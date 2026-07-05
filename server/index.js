@@ -1,5 +1,8 @@
 require('dotenv').config();
 
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
 const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
@@ -14,6 +17,8 @@ const PORT = process.env.PORT || 9000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
+const SSL_CERT_PATH = process.env.SSL_CERT_PATH;
+const SSL_KEY_PATH = process.env.SSL_KEY_PATH;
 
 if (!SESSION_SECRET) {
   console.error('SESSION_SECRET 환경변수가 설정되지 않았습니다. .env 파일을 확인해주세요.');
@@ -93,6 +98,17 @@ app.use((err, req, res, next) => {
   res.status(500).send('Internal Server Error');
 });
 
-app.listen(PORT, () => {
-  console.log(`카카오상품권 서버 실행 중 (${NODE_ENV}) - http://localhost:${PORT}`);
+function createServer() {
+  if (SSL_CERT_PATH && SSL_KEY_PATH) {
+    const cert = fs.readFileSync(SSL_CERT_PATH);
+    const key = fs.readFileSync(SSL_KEY_PATH);
+    return { server: https.createServer({ cert, key }, app), protocol: 'https' };
+  }
+  return { server: http.createServer(app), protocol: 'http' };
+}
+
+const { server, protocol } = createServer();
+
+server.listen(PORT, () => {
+  console.log(`카카오상품권 서버 실행 중 (${NODE_ENV}) - ${protocol}://localhost:${PORT}`);
 });
