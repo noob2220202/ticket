@@ -34,8 +34,17 @@ app.use(
         scriptSrc: ["'self'"],
         imgSrc: ["'self'", 'data:'],
         connectSrc: ["'self'"],
+        // Helmet's default directive set includes upgrade-insecure-requests,
+        // which forces every subresource (css/js/fetch) onto https. While the
+        // site is only served over plain http (no TLS on this port yet), that
+        // silently breaks every asset load. Only enable it once COOKIE_SECURE
+        // (i.e. real HTTPS) is turned on.
+        upgradeInsecureRequests: COOKIE_SECURE ? [] : null,
       },
     },
+    // Same reasoning: don't tell browsers to remember/enforce https for this
+    // host until it's actually served over https.
+    hsts: COOKIE_SECURE,
   })
 );
 
