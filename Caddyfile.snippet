@@ -1,0 +1,6 @@
+# 복드림 상품권 - Caddy 리버스 프록시 설정
+# /etc/caddy/Caddyfile 에 아래 블록을 추가한 뒤 reload 하세요.
+
+bokdreamticket.store {
+    reverse_proxy 127.0.0.1:9011
+}
