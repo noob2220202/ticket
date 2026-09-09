@@ -1,6 +1,13 @@
 # 복드림 상품권 - Caddy 리버스 프록시 설정
-# /etc/caddy/Caddyfile 에 아래 블록을 추가한 뒤 reload 하세요.
+# /etc/caddy/Caddyfile 에 아래 블록들을 추가한 뒤 reload 하세요.
+# (Cloudflare 프록시는 회색 구름(DNS only)이어야 Caddy가 인증서를 자동 발급합니다.)
 
+# 사이트 1: 대표자 송은영, 이추봉
 bokdreamticket.store {
     reverse_proxy 127.0.0.1:9011
+}
+
+# 사이트 2: 대표자 양동헌
+ticketbokdream.shop {
+    reverse_proxy 127.0.0.1:9015
 }
