@@ -4,7 +4,7 @@
 (function () {
   var SITE_CONFIG = {
     'bokdreamticket.store': { owner: '송은영, 이추봉' },
-    'ticketbokdream.shop': { owner: '양동헌' },
+    'ticketbokdream.shop': { owner: '양동헌', phone: '010-8113-7635' },
   };
 
   var host = window.location.hostname.replace(/^www\./, '');
@@ -14,5 +14,17 @@
   if (cfg.owner) {
     var ownerEl = document.getElementById('bizOwner');
     if (ownerEl) ownerEl.textContent = cfg.owner;
+  }
+
+  if (cfg.phone) {
+    var phoneRe = /\d{2,3}-\d{3,4}-\d{4}/;
+    document.querySelectorAll('a[href^="tel:"]').forEach(function (a) {
+      a.setAttribute('href', 'tel:' + cfg.phone);
+      a.childNodes.forEach(function (node) {
+        if (node.nodeType === 3 && phoneRe.test(node.nodeValue)) {
+          node.nodeValue = node.nodeValue.replace(phoneRe, cfg.phone);
+        }
+      });
+    });
   }
 })();
