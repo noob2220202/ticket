@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>관리자 - 복드림 상품권</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<div class="admin-gate" id="adminGate">
+  <div class="admin-gate-card">
+    <h1>관리자 로그인</h1>
+    <p>내부 직원 전용 페이지입니다.</p>
+    <form id="adminGateForm">
+      <input type="password" id="adminGatePw" placeholder="관리자 비밀번호" autocomplete="off" required>
+      <p class="admin-gate-error" id="adminGateError"></p>
+      <button type="submit">입장</button>
+    </form>
+  </div>
+</div>
+
+<div id="adminDashboard" hidden>
+  <div class="admin-notice">데모 데이터 안내: 아래 주문/인보이스는 화면·출력 형태 점검용 샘플이며 실제 거래가 아닙니다.</div>
+
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div>
+        <h1>주문 · 매입 관리</h1>
+        <div class="admin-sub">복드림 상품권 관리자 대시보드 (데모)</div>
+      </div>
+      <button class="admin-logout" id="adminLogout">로그아웃</button>
+    </div>
+
+    <div class="admin-stats">
+      <div class="stat-card">
+        <div class="stat-label">전체 건수</div>
+        <div class="stat-value" id="statTotal">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">완료</div>
+        <div class="stat-value" id="statCompleted">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">처리 대기</div>
+        <div class="stat-value" id="statPending">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">완료 건 정산 합계</div>
+        <div class="stat-value" id="statAmount">-</div>
+      </div>
+    </div>
+
+    <div class="admin-toolbar">
+      <select id="filterBrand">
+        <option value="all">전체 브랜드</option>
+        <option value="lotte">롯데백화점</option>
+        <option value="shinsegae">신세계백화점</option>
+        <option value="hyundai">현대백화점</option>
+        <option value="galleria">갤러리아</option>
+        <option value="guk">국민관광</option>
+        <option value="keumkang">금강제화</option>
+        <option value="oil">주유상품권</option>
+      </select>
+      <select id="filterType">
+        <option value="all">전체 유형</option>
+        <option value="매입">매입</option>
+        <option value="판매">판매</option>
+      </select>
+      <select id="filterStatus">
+        <option value="all">전체 상태</option>
+        <option value="완료">완료</option>
+        <option value="입금대기">입금대기</option>
+        <option value="확인중">확인중</option>
+        <option value="취소">취소</option>
+      </select>
+      <input type="text" id="filterKeyword" placeholder="주문번호, 인보이스번호, 고객명 검색">
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>주문번호</th>
+            <th>일시</th>
+            <th>유형</th>
+            <th>브랜드</th>
+            <th>액면가 × 수량</th>
+            <th>정산금액</th>
+            <th>고객</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody id="orderTableBody"></tbody>
+      </table>
+      <p class="admin-empty" id="orderEmpty" hidden>조건에 맞는 주문이 없습니다.</p>
+    </div>
+  </div>
+</div>
+
+<div class="invoice-overlay" id="invoiceOverlay" hidden>
+  <div class="invoice-sheet">
+    <div class="invoice-toolbar">
+      <button type="button" id="invoicePrint" class="btn-print">PDF로 저장 / 인쇄</button>
+      <button type="button" id="invoiceClose">닫기</button>
+    </div>
+    <div class="invoice-doc" id="invoiceBody"></div>
+  </div>
+</div>
+
+<script src="js/orders-data.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
