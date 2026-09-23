@@ -5,6 +5,10 @@
   var SITE_CONFIG = {
     'bokdreamticket.store': { owner: '김상현', phone: '010-6497-7010' },
     'ticketbokdream.shop': { owner: '양동헌', phone: '010-8113-7635' },
+    // 복드림.store (한글 도메인) — 브라우저는 punycode(xn--) 형태로 전달하지만
+    // 두 표기 모두 등록해 둡니다.
+    'xn--hy1bm6gx4c.store': { owner: '김상현', phone: '010-6497-7010' },
+    '복드림.store': { owner: '김상현', phone: '010-6497-7010' },
   };
 
   var host = window.location.hostname.replace(/^www\./, '');
