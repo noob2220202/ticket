@@ -3,7 +3,7 @@
 // 호스트명에 맞춰 바꿉니다. 매칭되는 항목이 없으면 HTML의 기본값을 유지합니다.
 (function () {
   var SITE_CONFIG = {
-    'bokdreamticket.store': { owner: '송은영, 이추봉' },
+    'bokdreamticket.store': { owner: '김상현', phone: '010-6497-7010' },
     'ticketbokdream.shop': { owner: '양동헌', phone: '010-8113-7635' },
   };
 
