@@ -6,6 +6,60 @@
 // 진짜 운영 단계에서는 서버 인증으로 반드시 교체해야 합니다.
 const ADMIN_PASSWORD = 'bokdream2026';
 
+// sessionStorage가 막힌 환경(카카오톡 인앱브라우저 등)에서 예외가 터져
+// 폼 제출 리스너 등록 자체가 실행되지 못하는 일이 없도록, 접근을
+// try/catch로 감싸고 실패 시 메모리로 폴백합니다.
+function safeSessionStorage() {
+  let store = null;
+  try {
+    store = window.sessionStorage;
+    const testKey = '__admin_test__';
+    store.setItem(testKey, '1');
+    store.removeItem(testKey);
+  } catch (e) {
+    store = null;
+  }
+
+  const memory = {};
+
+  return {
+    getItem(key) {
+      if (store) {
+        try {
+          return store.getItem(key);
+        } catch (e) {
+          // 폴백
+        }
+      }
+      return Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : null;
+    },
+    setItem(key, value) {
+      if (store) {
+        try {
+          store.setItem(key, value);
+          return;
+        } catch (e) {
+          // 폴백
+        }
+      }
+      memory[key] = value;
+    },
+    removeItem(key) {
+      if (store) {
+        try {
+          store.removeItem(key);
+          return;
+        } catch (e) {
+          // 폴백
+        }
+      }
+      delete memory[key];
+    },
+  };
+}
+
+const adminStorage = safeSessionStorage();
+
 const gate = document.getElementById('adminGate');
 const dashboard = document.getElementById('adminDashboard');
 const gateForm = document.getElementById('adminGateForm');
@@ -13,7 +67,7 @@ const gateInput = document.getElementById('adminGatePw');
 const gateError = document.getElementById('adminGateError');
 
 function isAuthed() {
-  return sessionStorage.getItem('adminAuthed') === '1';
+  return adminStorage.getItem('adminAuthed') === '1';
 }
 
 function showDashboard() {
@@ -30,7 +84,7 @@ if (gateForm) {
   gateForm.addEventListener('submit', (e) => {
     e.preventDefault();
     if (gateInput.value === ADMIN_PASSWORD) {
-      sessionStorage.setItem('adminAuthed', '1');
+      adminStorage.setItem('adminAuthed', '1');
       gateError.textContent = '';
       showDashboard();
     } else {
@@ -42,7 +96,7 @@ if (gateForm) {
 const logoutBtn = document.getElementById('adminLogout');
 if (logoutBtn) {
   logoutBtn.addEventListener('click', () => {
-    sessionStorage.removeItem('adminAuthed');
+    adminStorage.removeItem('adminAuthed');
     dashboard.hidden = true;
     gate.hidden = false;
     gateInput.value = '';
