@@ -60,6 +60,59 @@ function safeSessionStorage() {
 
 const adminStorage = safeSessionStorage();
 
+// 인보이스 데이터는 탭을 닫아도 남아있어야 하므로 localStorage를 쓰되,
+// 접근이 막힌 환경에서는 위와 같은 방식으로 메모리로 폴백합니다.
+function safeLocalStorage() {
+  let store = null;
+  try {
+    store = window.localStorage;
+    const testKey = '__admin_test__';
+    store.setItem(testKey, '1');
+    store.removeItem(testKey);
+  } catch (e) {
+    store = null;
+  }
+
+  const memory = {};
+
+  return {
+    getItem(key) {
+      if (store) {
+        try {
+          return store.getItem(key);
+        } catch (e) {
+          // 폴백
+        }
+      }
+      return Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : null;
+    },
+    setItem(key, value) {
+      if (store) {
+        try {
+          store.setItem(key, value);
+          return;
+        } catch (e) {
+          // 폴백
+        }
+      }
+      memory[key] = value;
+    },
+    removeItem(key) {
+      if (store) {
+        try {
+          store.removeItem(key);
+          return;
+        } catch (e) {
+          // 폴백
+        }
+      }
+      delete memory[key];
+    },
+  };
+}
+
+const adminInvoiceStorage = safeLocalStorage();
+
 const gate = document.getElementById('adminGate');
 const dashboard = document.getElementById('adminDashboard');
 const gateForm = document.getElementById('adminGateForm');
@@ -74,10 +127,6 @@ function showDashboard() {
   gate.hidden = true;
   dashboard.hidden = false;
   renderAll();
-}
-
-if (isAuthed()) {
-  showDashboard();
 }
 
 if (gateForm) {
@@ -121,7 +170,29 @@ const BRAND_LABEL = {
   galleria: '갤러리아', guk: '국민관광', keumkang: '금강제화', oil: '주유상품권',
 };
 
-let currentOrders = typeof DEMO_ORDERS !== 'undefined' ? DEMO_ORDERS : [];
+const BRAND_FULL_NAME = {
+  lotte: '롯데백화점 상품권', shinsegae: '신세계백화점 상품권', hyundai: '현대백화점 상품권',
+  galleria: '갤러리아 상품권', guk: '국민관광상품권', keumkang: '금강제화 상품권', oil: '주유상품권',
+};
+
+// ---- 직접 작성한 인보이스 저장 ----
+
+const MANUAL_ORDERS_KEY = 'kk_admin_manual_orders';
+
+function loadManualOrders() {
+  try {
+    return JSON.parse(adminInvoiceStorage.getItem(MANUAL_ORDERS_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveManualOrders(list) {
+  adminInvoiceStorage.setItem(MANUAL_ORDERS_KEY, JSON.stringify(list));
+}
+
+let manualOrders = loadManualOrders();
+let currentOrders = manualOrders.concat(typeof DEMO_ORDERS !== 'undefined' ? DEMO_ORDERS : []);
 
 function renderStats(orders) {
   const total = orders.length;
@@ -151,14 +222,14 @@ function renderTable(orders) {
   orders.forEach((o) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${o.id}</td>
+      <td>${escapeHtml(o.id)}${o.manual ? ' <span class="badge-manual">직접입력</span>' : ''}</td>
       <td>${fmtDate(o.createdAt)}</td>
-      <td><span class="badge-type">${o.type}</span></td>
-      <td>${BRAND_LABEL[o.brand] || o.brandName}</td>
+      <td><span class="badge-type">${escapeHtml(o.type)}</span></td>
+      <td>${escapeHtml(BRAND_LABEL[o.brand] || o.brandName)}</td>
       <td>${won(o.denom)} × ${o.qty}</td>
       <td>${won(o.settlementAmount)}</td>
-      <td>${o.customer.name} (${o.customer.phone})</td>
-      <td><span class="badge-status badge-${o.status}">${o.status}</span></td>
+      <td>${escapeHtml(o.customer.name)} (${escapeHtml(o.customer.phone)})</td>
+      <td><span class="badge-status badge-${o.status}">${escapeHtml(o.status)}</span></td>
     `;
     tr.addEventListener('click', () => openInvoice(o));
     tbody.appendChild(tr);
@@ -202,6 +273,16 @@ if (kwInput) kwInput.addEventListener('input', applyFilters);
 
 const overlay = document.getElementById('invoiceOverlay');
 const invoiceBody = document.getElementById('invoiceBody');
+const invoiceDeleteBtn = document.getElementById('invoiceDelete');
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 function openInvoice(o) {
   const isBuy = o.type === '매입';
@@ -211,7 +292,7 @@ function openInvoice(o) {
     <div class="invoice-doc-head">
       <div>
         <h2>${isBuy ? '매입' : '판매'} 인보이스</h2>
-        <div class="invoice-no">${o.invoiceNo} · 발행일 ${fmtDate(o.createdAt)}</div>
+        <div class="invoice-no">${escapeHtml(o.invoiceNo)} · 발행일 ${fmtDate(o.createdAt)}</div>
       </div>
       <div class="invoice-brand">
         <strong>복드림 상품권</strong>
@@ -223,20 +304,20 @@ function openInvoice(o) {
     <div class="invoice-section">
       <h3>거래 정보</h3>
       <div class="invoice-grid">
-        <div><dt>주문번호</dt><dd>${o.id}</dd></div>
-        <div><dt>거래유형</dt><dd>${o.type}</dd></div>
-        <div><dt>처리상태</dt><dd>${o.status}</dd></div>
-        <div><dt>담당</dt><dd>${o.staff}</dd></div>
+        <div><dt>주문번호</dt><dd>${escapeHtml(o.id)}</dd></div>
+        <div><dt>거래유형</dt><dd>${escapeHtml(o.type)}</dd></div>
+        <div><dt>처리상태</dt><dd>${escapeHtml(o.status)}</dd></div>
+        <div><dt>담당</dt><dd>${escapeHtml(o.staff)}</dd></div>
       </div>
     </div>
 
     <div class="invoice-section">
       <h3>고객 정보</h3>
       <div class="invoice-grid">
-        <div><dt>고객명</dt><dd>${o.customer.name}</dd></div>
-        <div><dt>연락처</dt><dd>${o.customer.phone}</dd></div>
-        <div><dt>가입월</dt><dd>${o.customer.memberSince}</dd></div>
-        <div><dt>결제수단</dt><dd>${o.paymentMethod}</dd></div>
+        <div><dt>고객명</dt><dd>${escapeHtml(o.customer.name)}</dd></div>
+        <div><dt>연락처</dt><dd>${escapeHtml(o.customer.phone)}</dd></div>
+        <div><dt>가입월</dt><dd>${escapeHtml(o.customer.memberSince) || '-'}</dd></div>
+        <div><dt>결제수단</dt><dd>${escapeHtml(o.paymentMethod)}</dd></div>
       </div>
     </div>
 
@@ -254,7 +335,7 @@ function openInvoice(o) {
         </thead>
         <tbody>
           <tr>
-            <td>${o.brandName}</td>
+            <td>${escapeHtml(o.brandName)}</td>
             <td class="num">${won(o.denom)}</td>
             <td class="num">${o.qty}개</td>
             <td class="num">${pct(o.discountRate)}</td>
@@ -271,13 +352,30 @@ function openInvoice(o) {
     <div class="invoice-section">
       <h3>정산 계좌</h3>
       <div class="invoice-grid">
-        <div><dt>은행</dt><dd>${o.bank}</dd></div>
-        <div><dt>계좌번호</dt><dd>${o.accountMasked}</dd></div>
+        <div><dt>은행</dt><dd>${escapeHtml(o.bank)}</dd></div>
+        <div><dt>계좌번호</dt><dd>${escapeHtml(o.accountMasked)}</dd></div>
       </div>
     </div>
 
-    <div class="invoice-memo">메모: ${o.memo}</div>
+    <div class="invoice-memo">메모: ${escapeHtml(o.memo)}</div>
   `;
+
+  if (invoiceDeleteBtn) {
+    if (o.manual) {
+      invoiceDeleteBtn.hidden = false;
+      invoiceDeleteBtn.onclick = () => {
+        if (!window.confirm('이 인보이스를 삭제할까요? 되돌릴 수 없습니다.')) return;
+        manualOrders = manualOrders.filter((m) => m.id !== o.id);
+        saveManualOrders(manualOrders);
+        currentOrders = manualOrders.concat(typeof DEMO_ORDERS !== 'undefined' ? DEMO_ORDERS : []);
+        overlay.hidden = true;
+        applyFilters();
+      };
+    } else {
+      invoiceDeleteBtn.hidden = true;
+      invoiceDeleteBtn.onclick = null;
+    }
+  }
 
   overlay.hidden = false;
 }
@@ -291,3 +389,127 @@ overlay.addEventListener('click', (e) => {
 document.getElementById('invoicePrint').addEventListener('click', () => {
   window.print();
 });
+
+// ---- 인보이스 직접 작성 ----
+
+const newInvoiceBtn = document.getElementById('newInvoiceBtn');
+const createOverlay = document.getElementById('createOverlay');
+const createForm = document.getElementById('createForm');
+const createError = document.getElementById('createError');
+const cBrandSelect = document.getElementById('cBrand');
+const cBrandNameInput = document.getElementById('cBrandName');
+
+function nowLocalInputValue() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+if (cBrandSelect && cBrandNameInput) {
+  cBrandSelect.addEventListener('change', () => {
+    cBrandNameInput.value = cBrandSelect.value === 'etc' ? '' : (BRAND_FULL_NAME[cBrandSelect.value] || '');
+  });
+}
+
+if (newInvoiceBtn && createOverlay && createForm) {
+  newInvoiceBtn.addEventListener('click', () => {
+    createForm.reset();
+    createError.hidden = true;
+    document.getElementById('cDate').value = nowLocalInputValue();
+    document.getElementById('cStaff').value = '관리자';
+    document.getElementById('cPayment').value = '계좌이체';
+    cBrandNameInput.value = BRAND_FULL_NAME[cBrandSelect.value] || '';
+    createOverlay.hidden = false;
+  });
+
+  document.getElementById('createClose').addEventListener('click', () => {
+    createOverlay.hidden = true;
+  });
+  createOverlay.addEventListener('click', (e) => {
+    if (e.target === createOverlay) createOverlay.hidden = true;
+  });
+
+  createForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    createError.hidden = true;
+
+    const type = document.getElementById('cType').value;
+    const status = document.getElementById('cStatus').value;
+    const brand = cBrandSelect.value;
+    const brandName = cBrandNameInput.value.trim() || BRAND_FULL_NAME[brand] || '상품권';
+    const dateVal = document.getElementById('cDate').value;
+    const staff = document.getElementById('cStaff').value.trim() || '관리자';
+    const denom = Number(document.getElementById('cDenom').value);
+    const qty = Number(document.getElementById('cQty').value);
+    const discountPct = Number(document.getElementById('cDiscount').value) || 0;
+    const discountRate = discountPct / 100;
+    const settlementInput = document.getElementById('cSettlement').value;
+    const name = document.getElementById('cName').value.trim();
+    const phone = document.getElementById('cPhone').value.trim();
+    const paymentMethod = document.getElementById('cPayment').value.trim() || '계좌이체';
+    const bank = document.getElementById('cBank').value.trim();
+    const account = document.getElementById('cAccount').value.trim();
+    const memo = document.getElementById('cMemo').value.trim();
+
+    if (!denom || denom <= 0 || !qty || qty <= 0) {
+      createError.textContent = '액면가와 수량을 올바르게 입력해주세요.';
+      createError.hidden = false;
+      return;
+    }
+    if (!name || !phone) {
+      createError.textContent = '고객명과 연락처를 입력해주세요.';
+      createError.hidden = false;
+      return;
+    }
+
+    const faceTotal = denom * qty;
+    let settlementAmount;
+    if (settlementInput !== '' && !Number.isNaN(Number(settlementInput))) {
+      settlementAmount = Number(settlementInput);
+    } else {
+      settlementAmount = type === '매입'
+        ? Math.round(faceTotal * (1 - discountRate))
+        : Math.round(faceTotal * (1 + discountRate));
+    }
+
+    const createdAt = dateVal ? new Date(dateVal).toISOString() : new Date().toISOString();
+    const stamp = createdAt.slice(0, 10).replace(/-/g, '');
+    const seq = String(Math.floor(Math.random() * 900) + 100);
+
+    const order = {
+      id: `BD-${stamp}-${seq}`,
+      invoiceNo: `INV-${stamp}-${seq}`,
+      type,
+      status,
+      createdAt,
+      customer: { name, phone, memberSince: '' },
+      brand,
+      brandName,
+      denom,
+      qty,
+      faceTotal,
+      discountRate,
+      settlementAmount,
+      paymentMethod,
+      bank,
+      accountMasked: account,
+      staff,
+      memo: memo || '타 플랫폼 거래를 관리자가 직접 등록',
+      manual: true,
+    };
+
+    manualOrders.unshift(order);
+    saveManualOrders(manualOrders);
+    currentOrders = manualOrders.concat(typeof DEMO_ORDERS !== 'undefined' ? DEMO_ORDERS : []);
+
+    createOverlay.hidden = true;
+    applyFilters();
+    openInvoice(order);
+  });
+}
+
+// 이전 세션에서 로그인된 상태라면 대시보드를 바로 보여줍니다.
+// (렌더링에 필요한 변수/함수가 모두 선언된 뒤에 실행되어야 하므로 파일 맨 끝에 둡니다.)
+if (isAuthed()) {
+  showDashboard();
+}

@@ -33,7 +33,10 @@
         <h1>주문 · 매입 관리</h1>
         <div class="admin-sub">복드림 상품권 관리자 대시보드 (데모)</div>
       </div>
-      <button class="admin-logout" id="adminLogout">로그아웃</button>
+      <div class="admin-header-actions">
+        <button class="admin-new-invoice" id="newInvoiceBtn">+ 새 인보이스 작성</button>
+        <button class="admin-logout" id="adminLogout">로그아웃</button>
+      </div>
     </div>
 
     <div class="admin-stats">
@@ -65,6 +68,7 @@
         <option value="guk">국민관광</option>
         <option value="keumkang">금강제화</option>
         <option value="oil">주유상품권</option>
+        <option value="etc">기타</option>
       </select>
       <select id="filterType">
         <option value="all">전체 유형</option>
@@ -105,10 +109,112 @@
 <div class="invoice-overlay" id="invoiceOverlay" hidden>
   <div class="invoice-sheet">
     <div class="invoice-toolbar">
+      <button type="button" id="invoiceDelete" class="btn-delete" hidden>이 인보이스 삭제</button>
       <button type="button" id="invoicePrint" class="btn-print">PDF로 저장 / 인쇄</button>
       <button type="button" id="invoiceClose">닫기</button>
     </div>
     <div class="invoice-doc" id="invoiceBody"></div>
+  </div>
+</div>
+
+<div class="invoice-overlay" id="createOverlay" hidden>
+  <div class="invoice-sheet create-sheet">
+    <div class="invoice-toolbar">
+      <button type="button" id="createClose">닫기</button>
+    </div>
+    <form class="create-form" id="createForm">
+      <h2>새 인보이스 작성</h2>
+      <p class="create-sub">다른 채널에서 이미 진행된 거래 내역을 직접 입력해 인보이스를 생성합니다.</p>
+
+      <div class="create-grid">
+        <div class="form-group">
+          <label for="cType">거래유형</label>
+          <select id="cType">
+            <option value="매입">매입</option>
+            <option value="판매">판매</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cStatus">처리상태</label>
+          <select id="cStatus">
+            <option value="완료">완료</option>
+            <option value="입금대기">입금대기</option>
+            <option value="확인중">확인중</option>
+            <option value="취소">취소</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cBrand">브랜드</label>
+          <select id="cBrand">
+            <option value="lotte">롯데백화점</option>
+            <option value="shinsegae">신세계백화점</option>
+            <option value="hyundai">현대백화점</option>
+            <option value="galleria">갤러리아</option>
+            <option value="guk">국민관광</option>
+            <option value="keumkang">금강제화</option>
+            <option value="oil">주유상품권</option>
+            <option value="etc">기타(직접입력)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cBrandName">브랜드명(인보이스 표시용)</label>
+          <input type="text" id="cBrandName" placeholder="예: 롯데백화점 상품권">
+        </div>
+        <div class="form-group">
+          <label for="cDate">거래일시</label>
+          <input type="datetime-local" id="cDate">
+        </div>
+        <div class="form-group">
+          <label for="cStaff">담당자</label>
+          <input type="text" id="cStaff" placeholder="예: 관리자">
+        </div>
+        <div class="form-group">
+          <label for="cDenom">액면가(1개, 원)</label>
+          <input type="number" id="cDenom" min="0" step="1000" required>
+        </div>
+        <div class="form-group">
+          <label for="cQty">수량</label>
+          <input type="number" id="cQty" min="1" step="1" value="1" required>
+        </div>
+        <div class="form-group">
+          <label for="cDiscount">할인율(%)</label>
+          <input type="number" id="cDiscount" min="0" max="100" step="0.01" value="0">
+        </div>
+        <div class="form-group">
+          <label for="cSettlement">정산금액(원, 비워두면 자동계산)</label>
+          <input type="number" id="cSettlement" min="0" step="1" placeholder="자동계산">
+        </div>
+        <div class="form-group">
+          <label for="cName">고객명</label>
+          <input type="text" id="cName" required>
+        </div>
+        <div class="form-group">
+          <label for="cPhone">연락처</label>
+          <input type="text" id="cPhone" placeholder="010-0000-0000" required>
+        </div>
+        <div class="form-group">
+          <label for="cPayment">결제수단</label>
+          <input type="text" id="cPayment" placeholder="예: 계좌이체">
+        </div>
+        <div class="form-group">
+          <label for="cBank">은행</label>
+          <input type="text" id="cBank" placeholder="예: 국민은행">
+        </div>
+        <div class="form-group create-grid-full">
+          <label for="cAccount">계좌번호</label>
+          <input type="text" id="cAccount" placeholder="예: 123-456-789012">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="cMemo">메모</label>
+        <textarea id="cMemo" rows="2" placeholder="예: 타 플랫폼 주문번호 등 참고사항"></textarea>
+      </div>
+
+      <p class="form-message error" id="createError" hidden></p>
+
+      <button type="submit" class="btn-block">인보이스 생성</button>
+    </form>
   </div>
 </div>
 
