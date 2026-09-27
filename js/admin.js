@@ -298,7 +298,7 @@ function openInvoice(o) {
       <div class="invoice-brand">
         <strong>복드림 상품권</strong>
         사업자등록번호 623-70-00295<br>
-        서울특별시 성동구 천호대로 430, 1층 103호(용담동)
+        서울특별시 성동구 천호대로 430, 1층 103호(용답동)
       </div>
     </div>
 
@@ -419,7 +419,6 @@ if (newInvoiceBtn && createOverlay && createForm) {
     document.getElementById('cDate').value = nowLocalInputValue();
     document.getElementById('cStaff').value = '관리자';
     document.getElementById('cPayment').value = '계좌이체';
-    document.getElementById('cAccount').value = '3333-29-5362055';
     cBrandNameInput.value = BRAND_FULL_NAME[cBrandSelect.value] || '';
     createOverlay.hidden = false;
   });
