@@ -298,7 +298,7 @@ function openInvoice(o) {
       <div class="invoice-brand">
         <strong>복드림 상품권</strong>
         사업자등록번호 623-70-00295<br>
-        서울특별시 성동구 천호대로 430, 1층 103호(용답동)
+        서울특별시 성동구 천호대로 430, 1층 103호(용담동)
       </div>
     </div>
 
