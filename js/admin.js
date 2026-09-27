@@ -419,6 +419,7 @@ if (newInvoiceBtn && createOverlay && createForm) {
     document.getElementById('cDate').value = nowLocalInputValue();
     document.getElementById('cStaff').value = '관리자';
     document.getElementById('cPayment').value = '계좌이체';
+    document.getElementById('cAccount').value = '3333-29-5362055';
     cBrandNameInput.value = BRAND_FULL_NAME[cBrandSelect.value] || '';
     createOverlay.hidden = false;
   });
