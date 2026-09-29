@@ -20,6 +20,9 @@
   if (cfg.owner) {
     var ownerEl = document.getElementById('bizOwner');
     if (ownerEl) ownerEl.textContent = cfg.owner;
+
+    var privacyEl = document.getElementById('bizPrivacyOfficer');
+    if (privacyEl) privacyEl.textContent = cfg.owner;
   }
 
   if (cfg.hidePhone) {
