@@ -358,6 +358,14 @@ function openInvoice(o) {
       </div>
     </div>
 
+    ${Array.isArray(o.pins) && o.pins.length ? `
+    <div class="invoice-section">
+      <h3>전달된 상품권 핀번호</h3>
+      <ol class="invoice-pins">
+        ${o.pins.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}
+      </ol>
+    </div>` : ''}
+
     <div class="invoice-memo">메모: ${escapeHtml(o.memo)}</div>
   `;
 
@@ -451,6 +459,10 @@ if (newInvoiceBtn && createOverlay && createForm) {
     const bank = document.getElementById('cBank').value.trim();
     const account = document.getElementById('cAccount').value.trim();
     const memo = document.getElementById('cMemo').value.trim();
+    const pins = document.getElementById('cPins').value
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
 
     if (!denom || denom <= 0 || !qty || qty <= 0) {
       createError.textContent = '액면가와 수량을 올바르게 입력해주세요.';
@@ -496,6 +508,7 @@ if (newInvoiceBtn && createOverlay && createForm) {
       accountMasked: account,
       staff,
       memo: memo || '타 플랫폼 거래를 관리자가 직접 등록',
+      pins,
       manual: true,
     };
 
