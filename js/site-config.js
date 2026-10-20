@@ -11,6 +11,7 @@
     '복드림.store': { owner: '김상현', phone: '010-6497-7010' },
     // 전화번호를 아예 노출하지 않는 도메인은 phone 대신 hidePhone을 씁니다.
     'bokdreamticket.shop': { owner: '박성현', hidePhone: true },
+    'bokdream.store': { owner: '황보경애', phone: '010-6497-7010' },
   };
 
   var host = window.location.hostname.replace(/^www\./, '');

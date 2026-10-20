@@ -34,5 +34,13 @@ module.exports = {
       cwd: __dirname,
       env: { NODE_ENV: "production" },
     },
+    {
+      // 사이트 5: bokdream.store (대표자 황보경애)
+      name: "bokdream-ticket-shop-5",
+      script: "npx",
+      args: "serve . -l 9018",
+      cwd: __dirname,
+      env: { NODE_ENV: "production" },
+    },
   ],
 };
