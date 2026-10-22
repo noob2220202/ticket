@@ -181,11 +181,25 @@ const BRAND_FULL_NAME = {
 const MANUAL_ORDERS_KEY = 'kk_admin_manual_orders';
 
 function loadManualOrders() {
+  let list;
   try {
-    return JSON.parse(adminInvoiceStorage.getItem(MANUAL_ORDERS_KEY)) || [];
+    list = JSON.parse(adminInvoiceStorage.getItem(MANUAL_ORDERS_KEY)) || [];
   } catch (e) {
     return [];
   }
+
+  // 예전 자동계산 오류(판매 건에 할인율을 더해서 계산) 보정: 값이 그 오류 공식과
+  // 정확히 일치하는 건만 올바른 공식(할인 적용)으로 다시 계산합니다.
+  let changed = false;
+  list.forEach((o) => {
+    if (o.type === '판매' && o.discountRate > 0
+      && o.settlementAmount === Math.round(o.faceTotal * (1 + o.discountRate))) {
+      o.settlementAmount = Math.round(o.faceTotal * (1 - o.discountRate));
+      changed = true;
+    }
+  });
+  if (changed) saveManualOrders(list);
+  return list;
 }
 
 function saveManualOrders(list) {
@@ -649,9 +663,7 @@ if (newInvoiceBtn && createOverlay && createForm) {
     if (settlementInput !== '' && !Number.isNaN(Number(settlementInput))) {
       settlementAmount = Number(settlementInput);
     } else {
-      settlementAmount = type === '매입'
-        ? Math.round(faceTotal * (1 - discountRate))
-        : Math.round(faceTotal * (1 + discountRate));
+      settlementAmount = Math.round(faceTotal * (1 - discountRate));
     }
 
     const createdAt = dateVal ? new Date(dateVal).toISOString() : new Date().toISOString();
