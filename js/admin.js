@@ -194,11 +194,11 @@ function saveManualOrders(list) {
 
 // ---- 기프티콘 사진 저장 ----
 // 사진은 용량이 커서 localStorage(약 5MB)에 넣으면 금방 가득 차므로
-// IndexedDB에 따로 저장하고, 인보이스에는 사진 id만 보관합니다.
+// IndexedDB에 원본 파일(Blob) 그대로 따로 저장하고, 주문에는 사진 id만 보관합니다.
+// (JPEG/PNG는 이미 압축된 포맷이라 재압축·리사이즈는 화질만 떨어뜨려 하지 않습니다.)
 
 const IMAGE_DB_NAME = 'kk_admin_images';
 const IMAGE_STORE = 'images';
-const IMAGE_MAX_SIDE = 1600;
 let imageDbPromise = null;
 
 function openImageDb() {
@@ -228,35 +228,21 @@ function runImageRequest(mode, fn) {
   }));
 }
 
-const putImage = (id, dataUrl) => runImageRequest('readwrite', (s) => s.put(dataUrl, id));
+const putImage = (id, blob) => runImageRequest('readwrite', (s) => s.put(blob, id));
 const getImage = (id) => runImageRequest('readonly', (s) => s.get(id));
 const deleteImage = (id) => runImageRequest('readwrite', (s) => s.delete(id));
 
-// 긴 변을 IMAGE_MAX_SIDE 이하로 줄여 JPEG로 압축합니다(바코드 판독 가능한 수준 유지).
-function compressImage(file) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const scale = Math.min(1, IMAGE_MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
-      const w = Math.max(1, Math.round(img.naturalWidth * scale));
-      const h = Math.max(1, Math.round(img.naturalHeight * scale));
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, w, h);
-      ctx.drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', 0.85));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('이미지를 불러올 수 없습니다.'));
-    };
-    img.src = url;
-  });
+// 저장된 값은 Blob(원본 파일)이며, 이전 버전에서 저장한 문자열(data URL)도 그대로 표시합니다.
+// Blob이면 object URL을 만들어 urlBucket에 모아두고, 화면을 다시 그릴 때 revokeUrls로 해제합니다.
+function imageSrc(value, urlBucket) {
+  if (typeof value === 'string') return value;
+  const url = URL.createObjectURL(value);
+  urlBucket.push(url);
+  return url;
+}
+
+function revokeUrls(urlBucket) {
+  urlBucket.splice(0).forEach((u) => URL.revokeObjectURL(u));
 }
 
 let manualOrders = loadManualOrders();
@@ -276,10 +262,27 @@ function renderStats(orders) {
   document.getElementById('statAmount').textContent = won(totalAmount);
 }
 
+// 목록에서는 핀번호를 가운데만 가려서 보여줍니다(전체 번호는 인보이스 상세에서 확인).
+function maskPin(pin) {
+  const s = String(pin);
+  if (s.length <= 8) return s.replace(/[^-\s]/g, '•');
+  return s.slice(0, 4) + s.slice(4, -4).replace(/[^-\s]/g, '•') + s.slice(-4);
+}
+
+function pinCellHtml(o) {
+  const pins = Array.isArray(o.pins) ? o.pins : [];
+  if (!pins.length) return '<span class="badge-pin badge-pin-none">미등록</span>';
+  const more = pins.length > 1 ? ` 외 ${pins.length - 1}건` : '';
+  return `<span class="badge-pin">등록 ${pins.length}건</span> <span class="pin-mask">${escapeHtml(maskPin(pins[0]))}${more}</span>`;
+}
+
+const tableImageUrls = [];
+
 function renderTable(orders) {
   const tbody = document.getElementById('orderTableBody');
   const empty = document.getElementById('orderEmpty');
   tbody.innerHTML = '';
+  revokeUrls(tableImageUrls);
 
   if (orders.length === 0) {
     empty.hidden = false;
@@ -288,17 +291,34 @@ function renderTable(orders) {
   empty.hidden = true;
 
   orders.forEach((o) => {
+    const imageCount = Array.isArray(o.images) ? o.images.length : 0;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${escapeHtml(o.id)}${o.manual ? ' <span class="badge-manual">직접입력</span>' : ''}</td>
       <td>${fmtDate(o.createdAt)}</td>
       <td><span class="badge-type">${escapeHtml(o.type)}</span></td>
-      <td>${escapeHtml(BRAND_LABEL[o.brand] || o.brandName)}</td>
+      <td>
+        <div class="order-prod">
+          <span class="order-thumb"></span>
+          <span>${escapeHtml(o.brandName || BRAND_LABEL[o.brand])}${imageCount > 1 ? ` <small class="order-img-count">사진 ${imageCount}장</small>` : ''}</span>
+        </div>
+      </td>
       <td>${won(o.denom)} × ${o.qty}</td>
       <td>${won(o.settlementAmount)}</td>
       <td>${escapeHtml(o.customer.name)} (${escapeHtml(o.customer.phone)})</td>
+      <td>${pinCellHtml(o)}</td>
       <td><span class="badge-status badge-${o.status}">${escapeHtml(o.status)}</span></td>
     `;
+    if (imageCount) {
+      const slot = tr.querySelector('.order-thumb');
+      getImage(o.images[0]).then((value) => {
+        if (!value || !slot.isConnected) return;
+        const img = new Image();
+        img.src = imageSrc(value, tableImageUrls);
+        img.alt = '상품권 이미지';
+        slot.appendChild(img);
+      }).catch(() => {});
+    }
     tr.addEventListener('click', () => openInvoice(o));
     tbody.appendChild(tr);
   });
@@ -315,7 +335,7 @@ function applyFilters() {
     if (status !== 'all' && o.status !== status) return false;
     if (type !== 'all' && o.type !== type) return false;
     if (keyword) {
-      const hay = `${o.id} ${o.invoiceNo} ${o.customer.name} ${o.brandName}`.toLowerCase();
+      const hay = `${o.id} ${o.invoiceNo} ${o.customer.name} ${o.customer.phone} ${o.brandName}`.toLowerCase();
       if (!hay.includes(keyword)) return false;
     }
     return true;
@@ -352,20 +372,30 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+const invoiceImageUrls = [];
+
 function loadInvoiceImages(o) {
+  revokeUrls(invoiceImageUrls);
   const box = document.getElementById('invoiceImages');
   if (!box) return;
-  Promise.all(o.images.map((id) => getImage(id).catch(() => null))).then((sources) => {
-    const found = sources.filter(Boolean);
+  Promise.all(o.images.map((id) => getImage(id).catch(() => null))).then((values) => {
+    const found = values.filter(Boolean);
     if (!found.length) {
       box.textContent = '저장된 사진을 불러올 수 없습니다. (다른 브라우저/기기에서 등록한 건은 사진이 보이지 않습니다.)';
       return;
     }
-    found.forEach((src) => {
+    found.forEach((value) => {
+      const src = imageSrc(value, invoiceImageUrls);
+      const link = document.createElement('a');
+      link.href = src;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.title = '클릭하면 원본 크기로 열립니다';
       const img = new Image();
       img.src = src;
       img.alt = '기프티콘 사진';
-      box.appendChild(img);
+      link.appendChild(img);
+      box.appendChild(link);
     });
   });
 }
@@ -523,13 +553,16 @@ function showCreateError(message) {
   createError.hidden = false;
 }
 
+const previewImageUrls = [];
+
 function renderPendingImages() {
   cImagePreview.innerHTML = '';
-  pendingImages.forEach((src, i) => {
+  revokeUrls(previewImageUrls);
+  pendingImages.forEach((file, i) => {
     const item = document.createElement('div');
     item.className = 'create-image-item';
     const img = document.createElement('img');
-    img.src = src;
+    img.src = imageSrc(file, previewImageUrls);
     img.alt = `기프티콘 ${i + 1}`;
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -545,17 +578,17 @@ function renderPendingImages() {
 }
 
 if (cImagesInput && cImagePreview) {
-  cImagesInput.addEventListener('change', async () => {
+  cImagesInput.addEventListener('change', () => {
     const files = Array.from(cImagesInput.files);
     cImagesInput.value = '';
     createError.hidden = true;
-    for (const file of files) {
-      try {
-        pendingImages.push(await compressImage(file));
-      } catch (err) {
+    files.forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        pendingImages.push(file);
+      } else {
         showCreateError(`${file.name}: 이미지 파일만 올릴 수 있습니다.`);
       }
-    }
+    });
     renderPendingImages();
   });
 }
@@ -660,7 +693,8 @@ if (newInvoiceBtn && createOverlay && createForm) {
       const imageIds = pendingImages.map((_, i) => `${order.id}-${stampId}-${i + 1}`);
       submitBtn.disabled = true;
       try {
-        await Promise.all(pendingImages.map((src, i) => putImage(imageIds[i], src)));
+        if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+        await Promise.all(pendingImages.map((file, i) => putImage(imageIds[i], file)));
       } catch (err) {
         imageIds.forEach((id) => deleteImage(id).catch(() => {}));
         showCreateError('이 브라우저에서는 사진을 저장할 수 없습니다. 사진을 빼고 다시 시도해주세요.');
@@ -676,6 +710,7 @@ if (newInvoiceBtn && createOverlay && createForm) {
     currentOrders = manualOrders.concat(typeof DEMO_ORDERS !== 'undefined' ? DEMO_ORDERS : []);
 
     pendingImages = [];
+    renderPendingImages();
     createOverlay.hidden = true;
     applyFilters();
     openInvoice(order);
