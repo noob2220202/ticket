@@ -460,10 +460,16 @@ table.invoice-items {
   color: #d68a00;
 }
 
-.pin-mask {
+.pin-list {
+  margin-top: 4px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
-  color: var(--color-text-muted);
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.pin-list div {
+  user-select: all;
 }
 
 .invoice-images {

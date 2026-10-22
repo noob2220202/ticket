@@ -262,18 +262,11 @@ function renderStats(orders) {
   document.getElementById('statAmount').textContent = won(totalAmount);
 }
 
-// 목록에서는 핀번호를 가운데만 가려서 보여줍니다(전체 번호는 인보이스 상세에서 확인).
-function maskPin(pin) {
-  const s = String(pin);
-  if (s.length <= 8) return s.replace(/[^-\s]/g, '•');
-  return s.slice(0, 4) + s.slice(4, -4).replace(/[^-\s]/g, '•') + s.slice(-4);
-}
-
 function pinCellHtml(o) {
   const pins = Array.isArray(o.pins) ? o.pins : [];
   if (!pins.length) return '<span class="badge-pin badge-pin-none">미등록</span>';
-  const more = pins.length > 1 ? ` 외 ${pins.length - 1}건` : '';
-  return `<span class="badge-pin">등록 ${pins.length}건</span> <span class="pin-mask">${escapeHtml(maskPin(pins[0]))}${more}</span>`;
+  return `<span class="badge-pin">등록 ${pins.length}건</span>
+    <div class="pin-list">${pins.map((p) => `<div>${escapeHtml(p)}</div>`).join('')}</div>`;
 }
 
 const tableImageUrls = [];
