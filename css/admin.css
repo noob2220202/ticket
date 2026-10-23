@@ -442,12 +442,9 @@ table.invoice-items {
   border-bottom-color: var(--color-primary);
 }
 
-.payout-table tbody tr {
-  cursor: default;
-}
-
-.payout-table tbody tr:hover {
-  background: none;
+.payout-none {
+  font-size: 13px;
+  color: var(--color-text-muted);
 }
 
 .payout-table td {

@@ -105,16 +105,23 @@ function renderPayouts() {
       });
     }
 
-    tr.querySelector('.payout-del').addEventListener('click', () => {
-      if (!window.confirm('이 지급내역을 삭제할까요? 사진과 핀번호도 함께 삭제되며 되돌릴 수 없습니다.')) return;
-      imageIds.forEach((id) => deleteImage(id).catch(() => {}));
-      payouts = payouts.filter((x) => x.id !== p.id);
-      savePayouts(payouts);
-      renderPayouts();
+    tr.querySelector('.payout-del').addEventListener('click', () => deletePayout(p));
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('a, button, .pin-list')) return;
+      openPayoutDetail(p);
     });
 
     tbody.appendChild(tr);
   });
+}
+
+function deletePayout(p) {
+  if (!window.confirm('이 지급내역을 삭제할까요? 사진과 핀번호도 함께 삭제되며 되돌릴 수 없습니다.')) return false;
+  (p.images || []).forEach((id) => deleteImage(id).catch(() => {}));
+  payouts = payouts.filter((x) => x.id !== p.id);
+  savePayouts(payouts);
+  renderPayouts();
+  return true;
 }
 
 payoutKeywordInput.addEventListener('input', renderPayouts);
@@ -266,6 +273,147 @@ payoutForm.addEventListener('submit', async (e) => {
   renderPayoutPreview();
   payoutOverlay.hidden = true;
   switchTab('payouts');
+});
+
+// ---- 상세 / PDF ----
+
+const payoutDetailOverlay = document.getElementById('payoutDetailOverlay');
+const payoutDetailBody = document.getElementById('payoutDetailBody');
+const payoutDetailUrls = [];
+let currentPayout = null;
+
+function closePayoutDetail() {
+  payoutDetailOverlay.hidden = true;
+  revokeUrls(payoutDetailUrls);
+  currentPayout = null;
+}
+
+function openPayoutDetail(p) {
+  currentPayout = p;
+  revokeUrls(payoutDetailUrls);
+  const pins = Array.isArray(p.pins) ? p.pins : [];
+  const imageIds = Array.isArray(p.images) ? p.images : [];
+
+  payoutDetailBody.innerHTML = `
+    <div class="invoice-doc-head">
+      <div>
+        <h2>상품권 지급 내역서</h2>
+        <div class="invoice-no">${escapeHtml(p.id)} · 지급일 ${fmtDate(p.createdAt)}</div>
+      </div>
+      <div class="invoice-brand">
+        <strong>복드림 상품권</strong>
+        사업자등록번호 623-70-00295<br>
+        서울특별시 성동구 천호대로 430, 1층 103호(용답동)
+      </div>
+    </div>
+
+    <div class="invoice-section">
+      <h3>지급 정보</h3>
+      <div class="invoice-grid">
+        <div><dt>지급번호</dt><dd>${escapeHtml(p.id)}</dd></div>
+        <div><dt>주문번호</dt><dd>${escapeHtml(p.orderNo) || '-'}</dd></div>
+      </div>
+    </div>
+
+    <div class="invoice-section">
+      <h3>고객 정보</h3>
+      <div class="invoice-grid">
+        <div><dt>고객명</dt><dd>${escapeHtml(p.customer.name)}</dd></div>
+        <div><dt>연락처</dt><dd>${escapeHtml(p.customer.phone)}</dd></div>
+      </div>
+    </div>
+
+    <div class="invoice-section">
+      <h3>상품 내역</h3>
+      <table class="invoice-items">
+        <thead>
+          <tr>
+            <th>상품권</th>
+            <th class="num">액면가</th>
+            <th class="num">수량</th>
+            <th class="num">액면 합계</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${escapeHtml(p.brandName)}</td>
+            <td class="num">${won(p.denom)}</td>
+            <td class="num">${p.qty}개</td>
+            <td class="num">${won(p.denom * p.qty)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="invoice-section">
+      <h3>전달된 상품권 핀번호</h3>
+      ${pins.length
+        ? `<ol class="invoice-pins">${pins.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ol>`
+        : '<div class="payout-none">등록된 핀번호 없음</div>'}
+    </div>
+
+    ${imageIds.length ? `
+    <div class="invoice-section">
+      <h3>상품권 사진</h3>
+      <div class="invoice-images" id="payoutDetailImages"></div>
+    </div>` : ''}
+
+    ${p.memo ? `<div class="invoice-memo">메모: ${escapeHtml(p.memo)}</div>` : ''}
+  `;
+
+  if (imageIds.length) {
+    const box = document.getElementById('payoutDetailImages');
+    Promise.all(imageIds.map((id) => getImage(id).catch(() => null))).then((values) => {
+      const found = values.filter(Boolean);
+      if (!box.isConnected) return;
+      if (!found.length) {
+        box.textContent = '저장된 사진을 불러올 수 없습니다. (다른 브라우저/기기에서 등록한 건은 사진이 보이지 않습니다.)';
+        return;
+      }
+      found.forEach((value) => {
+        const src = imageSrc(value, payoutDetailUrls);
+        const link = document.createElement('a');
+        link.href = src;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.title = '클릭하면 원본 크기로 열립니다';
+        const img = new Image();
+        img.src = src;
+        img.alt = '상품권 사진';
+        link.appendChild(img);
+        box.appendChild(link);
+      });
+    });
+  }
+
+  payoutDetailOverlay.hidden = false;
+}
+
+document.getElementById('payoutDetailClose').addEventListener('click', closePayoutDetail);
+payoutDetailOverlay.addEventListener('click', (e) => {
+  if (e.target === payoutDetailOverlay) closePayoutDetail();
+});
+
+document.getElementById('payoutDetailDelete').addEventListener('click', () => {
+  if (currentPayout && deletePayout(currentPayout)) closePayoutDetail();
+});
+
+// 사진이 모두 로드된 뒤 인쇄하고, 저장되는 PDF 파일명이 지급내역서_번호가 되도록 제목을 잠시 바꿉니다.
+document.getElementById('payoutDetailPrint').addEventListener('click', async () => {
+  const imgs = Array.from(payoutDetailBody.querySelectorAll('img'));
+  await Promise.all(imgs.map((img) => (img.complete ? null : new Promise((resolve) => {
+    img.onload = resolve;
+    img.onerror = resolve;
+  }))));
+
+  const prevTitle = document.title;
+  document.title = `지급내역서_${currentPayout ? currentPayout.id : ''}`;
+  const restore = () => {
+    document.title = prevTitle;
+    window.removeEventListener('afterprint', restore);
+  };
+  window.addEventListener('afterprint', restore);
+  window.print();
 });
 
 renderPayouts();
