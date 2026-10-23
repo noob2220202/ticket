@@ -28,7 +28,7 @@
   <div class="admin-wrap">
     <div class="admin-header">
       <div>
-        <h1>주문 · 매입 관리</h1>
+        <h1 id="adminTitle">주문 · 매입 관리</h1>
         <div class="admin-sub">복드림 상품권 관리자 대시보드</div>
       </div>
       <div class="admin-header-actions">
@@ -37,6 +37,12 @@
       </div>
     </div>
 
+    <div class="admin-tabs" role="tablist">
+      <button type="button" class="admin-tab active" data-tab="orders" role="tab">주문 · 매입 관리</button>
+      <button type="button" class="admin-tab" data-tab="payouts" role="tab">지급내역</button>
+    </div>
+
+    <div id="tabOrders">
     <div class="admin-stats">
       <div class="stat-card">
         <div class="stat-label">전체 건수</div>
@@ -101,6 +107,33 @@
         <tbody id="orderTableBody"></tbody>
       </table>
       <p class="admin-empty" id="orderEmpty" hidden>조건에 맞는 주문이 없습니다.</p>
+    </div>
+    </div>
+
+    <div id="tabPayouts" hidden>
+      <div class="admin-toolbar">
+        <button type="button" class="admin-new-invoice" id="newPayoutBtn">+ 지급 등록</button>
+        <input type="text" id="payoutKeyword" placeholder="고객명, 연락처, 상품권, 주문번호, 핀번호 검색">
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table payout-table">
+          <thead>
+            <tr>
+              <th>지급일시</th>
+              <th>주문번호</th>
+              <th>고객</th>
+              <th>상품권</th>
+              <th>핀번호</th>
+              <th>사진</th>
+              <th>메모</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="payoutTableBody"></tbody>
+        </table>
+        <p class="admin-empty" id="payoutEmpty" hidden>등록된 지급내역이 없습니다.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -228,7 +261,84 @@
   </div>
 </div>
 
+<div class="invoice-overlay" id="payoutOverlay" hidden>
+  <div class="invoice-sheet create-sheet">
+    <div class="invoice-toolbar">
+      <button type="button" id="payoutClose">닫기</button>
+    </div>
+    <form class="create-form" id="payoutForm">
+      <h2>지급내역 등록</h2>
+      <p class="create-sub">고객에게 전달한 상품권의 핀번호와 사진을 기록합니다. 인보이스와는 별도로 관리됩니다.</p>
+
+      <div class="create-grid">
+        <div class="form-group">
+          <label for="pDate">지급일시</label>
+          <input type="datetime-local" id="pDate">
+        </div>
+        <div class="form-group">
+          <label for="pOrderNo">주문번호 (선택)</label>
+          <input type="text" id="pOrderNo" placeholder="예: BD-20261022-893">
+        </div>
+        <div class="form-group">
+          <label for="pName">고객명</label>
+          <input type="text" id="pName" required>
+        </div>
+        <div class="form-group">
+          <label for="pPhone">연락처</label>
+          <input type="text" id="pPhone" placeholder="010-0000-0000" required>
+        </div>
+        <div class="form-group">
+          <label for="pBrand">상품권 종류</label>
+          <select id="pBrand">
+            <option value="lotte">롯데백화점</option>
+            <option value="shinsegae">신세계백화점</option>
+            <option value="hyundai">현대백화점</option>
+            <option value="galleria">갤러리아</option>
+            <option value="guk">국민관광</option>
+            <option value="keumkang">금강제화</option>
+            <option value="oil">주유상품권</option>
+            <option value="etc">기타(직접입력)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pBrandName">상품권명 (표시용)</label>
+          <input type="text" id="pBrandName" placeholder="예: 롯데백화점 상품권">
+        </div>
+        <div class="form-group">
+          <label for="pDenom">액면가(1개, 원)</label>
+          <input type="number" id="pDenom" min="0" step="1000" required>
+        </div>
+        <div class="form-group">
+          <label for="pQty">수량</label>
+          <input type="number" id="pQty" min="1" step="1" value="1" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="pPins">전달한 상품권 핀번호 (여러 개면 한 줄에 하나씩)</label>
+        <textarea id="pPins" rows="3" placeholder="예:&#10;1234-5678-9012-3456&#10;2345-6789-0123-4567" autocomplete="off" spellcheck="false"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="pImages">상품권 사진 (여러 장 선택 가능, 원본 그대로 저장)</label>
+        <input type="file" id="pImages" accept="image/*" multiple>
+        <div class="create-image-preview" id="pImagePreview"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="pMemo">메모</label>
+        <textarea id="pMemo" rows="2"></textarea>
+      </div>
+
+      <p class="form-message error" id="payoutError" hidden></p>
+
+      <button type="submit" class="btn-block">지급내역 저장</button>
+    </form>
+  </div>
+</div>
+
 <script src="js/orders-data.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/admin-payouts.js"></script>
 </body>
 </html>

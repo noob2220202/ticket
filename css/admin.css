@@ -8,6 +8,10 @@
   background: var(--color-bg);
 }
 
+.admin-gate[hidden] {
+  display: none;
+}
+
 .admin-gate-card {
   width: 100%;
   max-width: 360px;
@@ -412,6 +416,80 @@ table.invoice-items {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   line-height: 1.9;
   word-break: break-all;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-tab {
+  padding: 10px 18px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.admin-tab.active {
+  color: var(--color-primary-dark);
+  border-bottom-color: var(--color-primary);
+}
+
+.payout-table tbody tr {
+  cursor: default;
+}
+
+.payout-table tbody tr:hover {
+  background: none;
+}
+
+.payout-table td {
+  vertical-align: top;
+  white-space: normal;
+}
+
+.payout-sub {
+  color: var(--color-text-muted);
+}
+
+.payout-memo {
+  max-width: 220px;
+  word-break: break-word;
+}
+
+.payout-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 220px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.payout-thumbs img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.payout-del {
+  border: 1px solid rgba(224, 51, 93, 0.4);
+  background: #fff;
+  color: #c81e4c;
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .order-prod {
