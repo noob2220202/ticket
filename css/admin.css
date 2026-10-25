@@ -674,6 +674,8 @@ table.invoice-items {
 }
 
 /* 인쇄(=PDF 저장) 전용 */
+@page { margin: 0; }
+
 @media print {
   body * { visibility: hidden; }
   .invoice-sheet, .invoice-sheet * { visibility: visible; }
@@ -683,6 +685,7 @@ table.invoice-items {
     box-shadow: none;
     border-radius: 0;
     max-width: none;
+    padding: 14mm 12mm;
   }
   .invoice-toolbar { display: none; }
   .invoice-overlay { position: static; padding: 0; background: none; }

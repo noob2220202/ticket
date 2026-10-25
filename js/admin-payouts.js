@@ -54,7 +54,7 @@ function renderPayouts() {
   const keyword = payoutKeywordInput.value.trim().toLowerCase();
   const list = payouts.filter((p) => {
     if (!keyword) return true;
-    const hay = [p.orderNo, p.customer.name, p.customer.phone, p.brandName, ...(p.pins || [])]
+    const hay = [p.orderNo, p.customer.name, p.brandName, ...(p.pins || [])]
       .join(' ')
       .toLowerCase();
     return hay.includes(keyword);
@@ -70,7 +70,7 @@ function renderPayouts() {
     tr.innerHTML = `
       <td>${fmtDate(p.createdAt)}</td>
       <td>${escapeHtml(p.orderNo) || '-'}</td>
-      <td>${escapeHtml(p.customer.name)}<br><small class="payout-sub">${escapeHtml(p.customer.phone)}</small></td>
+      <td>${escapeHtml(p.customer.name)}</td>
       <td>${escapeHtml(p.brandName)}<br><small class="payout-sub">${won(p.denom)} × ${p.qty}</small></td>
       <td>${pins.length
         ? `<div class="pin-list">${pins.map((x) => `<div>${escapeHtml(x)}</div>`).join('')}</div>`
@@ -207,7 +207,6 @@ payoutForm.addEventListener('submit', async (e) => {
   const submitBtn = payoutForm.querySelector('button[type="submit"]');
 
   const name = document.getElementById('pName').value.trim();
-  const phone = document.getElementById('pPhone').value.trim();
   const brand = pBrandSelect.value;
   const brandName = pBrandNameInput.value.trim() || BRAND_FULL_NAME[brand] || '상품권';
   const denom = Number(document.getElementById('pDenom').value);
@@ -220,8 +219,8 @@ payoutForm.addEventListener('submit', async (e) => {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  if (!name || !phone) {
-    showPayoutError('고객명과 연락처를 입력해주세요.');
+  if (!name) {
+    showPayoutError('고객명을 입력해주세요.');
     return;
   }
   if (!denom || denom <= 0 || !qty || qty <= 0) {
@@ -240,7 +239,7 @@ payoutForm.addEventListener('submit', async (e) => {
     id,
     createdAt,
     orderNo,
-    customer: { name, phone },
+    customer: { name },
     brand,
     brandName,
     denom,
@@ -319,7 +318,6 @@ function openPayoutDetail(p) {
       <h3>고객 정보</h3>
       <div class="invoice-grid">
         <div><dt>고객명</dt><dd>${escapeHtml(p.customer.name)}</dd></div>
-        <div><dt>연락처</dt><dd>${escapeHtml(p.customer.phone)}</dd></div>
       </div>
     </div>
 
