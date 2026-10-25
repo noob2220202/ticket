@@ -120,15 +120,23 @@ const gateForm = document.getElementById('adminGateForm');
 const gateInput = document.getElementById('adminGatePw');
 const gateError = document.getElementById('adminGateError');
 
-function isAuthed() {
-  return adminStorage.getItem('adminAuthed') === '1';
-}
-
 // 지급내역 API(서버 DB) 호출 시 보낼 인증 토큰입니다. 관리자 비밀번호를 그대로
 // 쓰는 건 기존 게이트와 동일한 수준의 보호이며(소스에 노출됨), 실제 보안 수단은
 // 아닙니다. server/index.js 의 ADMIN_PASSWORD와 반드시 일치해야 합니다.
 function getAdminToken() {
   return adminStorage.getItem('adminToken') || '';
+}
+
+// adminToken이 추가되기 전에 로그인해둔 세션(adminAuthed만 있고 토큰은 없는 경우)은
+// 지급내역 API가 401로 실패하므로, 토큰이 없으면 로그인 안 된 것으로 취급해
+// 게이트 화면을 다시 띄웁니다(재로그인하면 토큰까지 정상 저장됩니다).
+function isAuthed() {
+  if (adminStorage.getItem('adminAuthed') !== '1') return false;
+  if (!getAdminToken()) {
+    adminStorage.removeItem('adminAuthed');
+    return false;
+  }
+  return true;
 }
 
 function showDashboard() {
