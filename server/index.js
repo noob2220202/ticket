@@ -8,7 +8,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { ZipArchive } = require('archiver');
 const db = require('./db');
+const { createDoc, renderPayoutPdf } = require('./pdf');
 
 const ROOT = path.join(__dirname, '..');
 const UPLOAD_DIR = path.join(ROOT, 'uploads');
@@ -119,6 +121,70 @@ app.delete('/api/payouts/:id', requireAdmin, (req, res) => {
     fs.unlink(path.join(UPLOAD_DIR, img.filename), () => {});
   });
   res.status(204).end();
+});
+
+// ---- 지급내역서 일괄 PDF(ZIP) 다운로드 ----
+// 지급내역 탭의 검색창과 같은 로직(주문번호/고객명/상품권명/핀번호 매칭)으로
+// 걸러낸 뒤, 각 건을 PDF로 만들어 ZIP 하나로 묶어 내려줍니다.
+
+function matchesKeyword(p, keyword) {
+  if (!keyword) return true;
+  const pins = (p.items || []).flatMap((it) => it.pins || []);
+  const hay = [p.orderNo, p.customer.name, p.brandName, ...pins].join(' ').toLowerCase();
+  return hay.includes(keyword);
+}
+
+function pdfDocToBuffer(doc) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    doc.end();
+  });
+}
+
+app.get('/api/payouts/export-zip', requireAdmin, async (req, res) => {
+  const keyword = String(req.query.keyword || '').trim().toLowerCase();
+  const matched = db.listPayouts().filter((p) => matchesKeyword(p, keyword));
+
+  if (!matched.length) {
+    return res.status(404).json({ error: '조건에 맞는 지급내역이 없습니다.' });
+  }
+
+  const safeKeyword = (keyword || '전체').replace(/[^\w가-힣-]/g, '_');
+  const dateStamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${encodeURIComponent(`지급내역서_${safeKeyword}_${dateStamp}`)}.zip"`,
+  );
+
+  const archive = new ZipArchive({ zlib: { level: 9 } });
+  archive.on('error', (err) => {
+    if (!res.headersSent) res.status(500);
+    res.end();
+    console.error('zip 생성 오류:', err);
+  });
+  archive.pipe(res);
+
+  const usedNames = new Set();
+  for (const payout of matched) {
+    const doc = createDoc();
+    renderPayoutPdf(doc, payout, (imageId) => {
+      const row = db.getImage(imageId);
+      return row ? path.join(UPLOAD_DIR, row.filename) : null;
+    });
+    const buffer = await pdfDocToBuffer(doc);
+
+    let name = `지급내역서_${payout.id}.pdf`;
+    while (usedNames.has(name)) name = `지급내역서_${payout.id}-${crypto.randomUUID().slice(0, 4)}.pdf`;
+    usedNames.add(name);
+
+    archive.append(buffer, { name });
+  }
+
+  archive.finalize();
 });
 
 // ---- 정적 파일 서빙 (기존 `serve .` 대체) ----

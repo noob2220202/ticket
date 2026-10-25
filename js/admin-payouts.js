@@ -185,6 +185,44 @@ async function deletePayout(p) {
 
 payoutKeywordInput.addEventListener('input', renderPayouts);
 
+// ---- 검색결과 PDF 일괄 다운로드(ZIP) ----
+
+const payoutExportBtn = document.getElementById('payoutExportBtn');
+
+payoutExportBtn.addEventListener('click', async () => {
+  const keyword = payoutKeywordInput.value.trim();
+  const originalLabel = payoutExportBtn.textContent;
+  payoutExportBtn.disabled = true;
+  payoutExportBtn.textContent = '생성 중...';
+
+  try {
+    const url = `/api/payouts/export-zip?keyword=${encodeURIComponent(keyword)}`;
+    const res = await fetch(url, { headers: payoutAuthHeaders() });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'PDF 생성에 실패했습니다.');
+    }
+    const blob = await res.blob();
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="([^"]+)"/);
+    const filename = match ? decodeURIComponent(match[1]) : `지급내역서_${keyword || '전체'}.zip`;
+
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    window.alert(err.message || 'PDF 생성에 실패했습니다.');
+  } finally {
+    payoutExportBtn.disabled = false;
+    payoutExportBtn.textContent = originalLabel;
+  }
+});
+
 // ---- 등록 폼 ----
 // 폼은 한 번에 액면 하나만 입력합니다. 같은 거래에 다른 액면을 더 추가하려면
 // 주문번호를 똑같이 입력해서 다시 등록하면 서버가 자동으로 같은 거래에 합칩니다.
