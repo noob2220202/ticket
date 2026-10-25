@@ -685,19 +685,36 @@ table.invoice-items {
 }
 
 /* 인쇄(=PDF 저장) 전용 */
-@page { margin: 0; }
+@page { margin: 14mm 12mm; }
 
 @media print {
   body * { visibility: hidden; }
   .invoice-sheet, .invoice-sheet * { visibility: visible; }
+  /* 이전엔 .invoice-sheet를 position:absolute + inset:0 + overflow:hidden으로
+     "한 페이지 크기"에 고정해서, 내용이 한 페이지보다 길어지면(사진·핀번호가 많은
+     지급내역서 등) 잘려 보이거나 빈 페이지가 잔뜩 생겼습니다. 인쇄는 일반 문서
+     흐름대로 여러 페이지에 자연스럽게 걸치도록 static/visible로 둡니다. */
+  .invoice-overlay {
+    position: static;
+    padding: 0;
+    background: none;
+    display: block;
+    overflow: visible;
+  }
   .invoice-sheet {
-    position: absolute;
-    inset: 0;
+    position: static;
     box-shadow: none;
     border-radius: 0;
     max-width: none;
-    padding: 14mm 12mm;
+    width: 100%;
+    overflow: visible;
   }
+  .invoice-doc { padding: 0; }
   .invoice-toolbar { display: none; }
-  .invoice-overlay { position: static; padding: 0; background: none; }
+  .invoice-section,
+  .invoice-images img,
+  .payout-pin-group,
+  .invoice-items tr {
+    break-inside: avoid;
+  }
 }
