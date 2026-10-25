@@ -121,7 +121,9 @@ app.delete('/api/payouts/:id', requireAdmin, (req, res) => {
 });
 
 // ---- 정적 파일 서빙 (기존 `serve .` 대체) ----
-app.use(express.static(ROOT));
+// `serve`는 확장자 없는 주소(/admin)를 자동으로 admin.html에 매칭해줬습니다.
+// express.static의 extensions 옵션으로 같은 동작을 유지합니다.
+app.use(express.static(ROOT, { extensions: ['html'] }));
 
 app.listen(PORT, () => {
   console.log(`서버 실행 중: http://localhost:${PORT}`);
