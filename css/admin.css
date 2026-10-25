@@ -688,17 +688,21 @@ table.invoice-items {
 @page { margin: 14mm 12mm; }
 
 @media print {
-  body * { visibility: hidden; }
-  .invoice-sheet, .invoice-sheet * { visibility: visible; }
+  /* visibility:hidden은 레이아웃 공간(높이)을 그대로 차지합니다. 관리자 대시보드
+     전체(주문·지급내역 목록 등, 지금은 100건 넘게 길어짐)가 화면엔 안 보여도
+     레이아웃 높이는 그대로 남아서, 인쇄 영역이 그 뒤로 밀려 "빈 페이지가 잔뜩
+     나온 뒤에야 실제 내용"이 나오는 문제가 있었습니다. display:none으로 아예
+     레이아웃에서 빼야 합니다. */
+  #adminGate, #adminDashboard { display: none !important; }
+  .invoice-overlay[hidden] { display: none !important; }
   /* 이전엔 .invoice-sheet를 position:absolute + inset:0 + overflow:hidden으로
      "한 페이지 크기"에 고정해서, 내용이 한 페이지보다 길어지면(사진·핀번호가 많은
      지급내역서 등) 잘려 보이거나 빈 페이지가 잔뜩 생겼습니다. 인쇄는 일반 문서
-     흐름대로 여러 페이지에 자연스럽게 걸치도록 static/visible로 둡니다. */
-  .invoice-overlay {
+     흐름대로 여러 페이지에 자연스럽게 걸치도록 둡니다. */
+  .invoice-overlay:not([hidden]) {
     position: static;
     padding: 0;
     background: none;
-    display: block;
     overflow: visible;
   }
   .invoice-sheet {
