@@ -5,6 +5,10 @@
 // 데이터는 더 이상 브라우저 localStorage/IndexedDB에만 있지 않고, 서버(server/index.js)의
 // SQLite DB(data/payouts.db)에 실제로 저장됩니다. 그래야 브라우저/기기를 바꿔도, 서버를
 // 재시작해도 지급내역과 사진이 그대로 남습니다.
+//
+// 지급내역 1건(payout)은 "거래" 단위이며, 그 안에 액면별 아이템(items)이 여러 개
+// 들어갈 수 있습니다(예: 50만원×7 + 10만원×2 + 1만원×1). 과거에는 액면마다 행이
+// 따로 생겼지만, 지금은 같은 거래(주문번호)로 들어온 액면들을 한 행으로 묶어 보여줍니다.
 
 const PAYOUTS_API = '/api/payouts';
 
@@ -26,13 +30,13 @@ async function apiCreatePayout(payload) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || '저장에 실패했습니다.');
-  return data;
+  return data; // { payoutId, itemId, merged }
 }
 
-async function apiUploadPayoutImages(id, files) {
+async function apiUploadItemImages(itemId, files) {
   const form = new FormData();
   files.forEach((file) => form.append('images', file));
-  const res = await fetch(`${PAYOUTS_API}/${encodeURIComponent(id)}/images`, {
+  const res = await fetch(`/api/payout-items/${encodeURIComponent(itemId)}/images`, {
     method: 'POST',
     headers: payoutAuthHeaders(),
     body: form,
@@ -58,6 +62,14 @@ let payouts = [];
 
 async function reloadPayouts() {
   payouts = await apiListPayouts();
+}
+
+function payoutTotal(p) {
+  return (p.items || []).reduce((sum, it) => sum + it.denom * it.qty, 0);
+}
+
+function payoutAllPins(p) {
+  return (p.items || []).flatMap((it) => it.pins || []);
 }
 
 // ---- 탭 전환 ----
@@ -104,7 +116,7 @@ async function renderPayouts() {
   const keyword = payoutKeywordInput.value.trim().toLowerCase();
   const list = payouts.filter((p) => {
     if (!keyword) return true;
-    const hay = [p.orderNo, p.customer.name, p.brandName, ...(p.pins || [])]
+    const hay = [p.orderNo, p.customer.name, p.brandName, ...payoutAllPins(p)]
       .join(' ')
       .toLowerCase();
     return hay.includes(keyword);
@@ -114,25 +126,28 @@ async function renderPayouts() {
   empty.textContent = payouts.length ? '조건에 맞는 지급내역이 없습니다.' : '등록된 지급내역이 없습니다.';
 
   list.forEach((p) => {
-    const pins = Array.isArray(p.pins) ? p.pins : [];
-    const imageIds = Array.isArray(p.images) ? p.images : [];
+    const items = Array.isArray(p.items) ? p.items : [];
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${fmtDate(p.createdAt)}</td>
       <td>${escapeHtml(p.orderNo) || '-'}</td>
       <td>${escapeHtml(p.customer.name)}</td>
-      <td>${escapeHtml(p.brandName)}<br><small class="payout-sub">${won(p.denom)} × ${p.qty}</small></td>
-      <td>${pins.length
-        ? `<div class="pin-list">${pins.map((x) => `<div>${escapeHtml(x)}</div>`).join('')}</div>`
-        : '<span class="badge-pin badge-pin-none">미등록</span>'}</td>
-      <td><div class="payout-thumbs">${imageIds.length ? '' : '-'}</div></td>
+      <td>${escapeHtml(p.brandName)}<br>${items.map((it) =>
+        `<small class="payout-sub">${won(it.denom)} × ${it.qty}</small>`).join('<br>')}</td>
+      <td>${items.map((it) => (it.pins.length
+        ? `<div class="pin-list">${it.pins.map((x) => `<div>${escapeHtml(x)}</div>`).join('')}</div>`
+        : '<span class="badge-pin badge-pin-none">미등록</span>')).join('')}</td>
+      <td><div class="payout-thumbs"></div></td>
       <td class="payout-memo">${escapeHtml(p.memo) || '-'}</td>
       <td><button type="button" class="payout-del">삭제</button></td>
     `;
 
-    if (imageIds.length) {
-      const box = tr.querySelector('.payout-thumbs');
-      imageIds.forEach((id) => {
+    const box = tr.querySelector('.payout-thumbs');
+    const allImageIds = items.flatMap((it) => it.images || []);
+    if (!allImageIds.length) {
+      box.textContent = '-';
+    } else {
+      allImageIds.forEach((id) => {
         const link = document.createElement('a');
         link.href = payoutImageUrl(id);
         link.target = '_blank';
@@ -171,6 +186,8 @@ async function deletePayout(p) {
 payoutKeywordInput.addEventListener('input', renderPayouts);
 
 // ---- 등록 폼 ----
+// 폼은 한 번에 액면 하나만 입력합니다. 같은 거래에 다른 액면을 더 추가하려면
+// 주문번호를 똑같이 입력해서 다시 등록하면 서버가 자동으로 같은 거래에 합칩니다.
 
 const payoutOverlay = document.getElementById('payoutOverlay');
 const payoutForm = document.getElementById('payoutForm');
@@ -280,12 +297,12 @@ payoutForm.addEventListener('submit', async (e) => {
 
   submitBtn.disabled = true;
   try {
-    const record = await apiCreatePayout({
+    const result = await apiCreatePayout({
       createdAt, orderNo, customerName: name, brand, brandName, denom, qty, pins, memo,
     });
 
     if (payoutPendingImages.length) {
-      await apiUploadPayoutImages(record.id, payoutPendingImages);
+      await apiUploadItemImages(result.itemId, payoutPendingImages);
     }
   } catch (err) {
     showPayoutError(err.message || '저장에 실패했습니다.');
@@ -313,8 +330,8 @@ function closePayoutDetail() {
 
 function openPayoutDetail(p) {
   currentPayout = p;
-  const pins = Array.isArray(p.pins) ? p.pins : [];
-  const imageIds = Array.isArray(p.images) ? p.images : [];
+  const items = Array.isArray(p.items) ? p.items : [];
+  const total = payoutTotal(p);
 
   payoutDetailBody.innerHTML = `
     <div class="invoice-doc-head">
@@ -356,24 +373,30 @@ function openPayoutDetail(p) {
           </tr>
         </thead>
         <tbody>
+          ${items.map((it) => `
           <tr>
             <td>${escapeHtml(p.brandName)}</td>
-            <td class="num">${won(p.denom)}</td>
-            <td class="num">${p.qty}개</td>
-            <td class="num">${won(p.denom * p.qty)}</td>
-          </tr>
+            <td class="num">${won(it.denom)}</td>
+            <td class="num">${it.qty}개</td>
+            <td class="num">${won(it.denom * it.qty)}</td>
+          </tr>`).join('')}
         </tbody>
       </table>
+      <div class="invoice-total">
+        <span>지급 총액 <strong>${won(total)}</strong></span>
+      </div>
     </div>
 
     <div class="invoice-section">
       <h3>전달된 상품권 핀번호</h3>
-      ${pins.length
-        ? `<ol class="invoice-pins">${pins.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ol>`
-        : '<div class="payout-none">등록된 핀번호 없음</div>'}
+      ${items.some((it) => it.pins.length) ? items.map((it) => (it.pins.length ? `
+        <div class="payout-pin-group">
+          <div class="payout-pin-group-title">${won(it.denom)} × ${it.qty}</div>
+          <ol class="invoice-pins">${it.pins.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ol>
+        </div>` : '')).join('') : '<div class="payout-none">등록된 핀번호 없음</div>'}
     </div>
 
-    ${imageIds.length ? `
+    ${items.some((it) => it.images.length) ? `
     <div class="invoice-section">
       <h3>상품권 사진</h3>
       <div class="invoice-images" id="payoutDetailImages"></div>
@@ -382,9 +405,10 @@ function openPayoutDetail(p) {
     ${p.memo ? `<div class="invoice-memo">메모: ${escapeHtml(p.memo)}</div>` : ''}
   `;
 
-  if (imageIds.length) {
+  const allImageIds = items.flatMap((it) => it.images || []);
+  if (allImageIds.length) {
     const box = document.getElementById('payoutDetailImages');
-    imageIds.forEach((id) => {
+    allImageIds.forEach((id) => {
       const link = document.createElement('a');
       link.href = payoutImageUrl(id);
       link.target = '_blank';

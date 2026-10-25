@@ -1,6 +1,7 @@
 node_modules/
 uploads/*
 !uploads/.gitkeep
+!uploads/denom-*.jpg
 data/*.db-journal
 data/*.db-wal
 data/*.db-shm

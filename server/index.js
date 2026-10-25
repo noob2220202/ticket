@@ -57,6 +57,8 @@ app.get('/api/payouts', requireAdmin, (req, res) => {
   res.json(db.listPayouts());
 });
 
+// 지급 등록 폼은 한 번에 액면 하나(denom/qty)만 받습니다. 같은 거래(order_no)로
+// 다시 등록하면 새 거래를 만들지 않고 기존 거래에 액면(아이템)만 추가합니다.
 app.post('/api/payouts', requireAdmin, (req, res) => {
   const body = req.body || {};
   const name = (body.customerName || '').trim();
@@ -70,37 +72,36 @@ app.post('/api/payouts', requireAdmin, (req, res) => {
   }
 
   const createdAt = body.createdAt ? new Date(body.createdAt).toISOString() : new Date().toISOString();
-  const id = `PO-${createdAt.slice(0, 10).replace(/-/g, '')}-${Date.now().toString(36).toUpperCase()}`;
 
-  const record = {
-    id,
-    createdAt,
-    orderNo: body.orderNo || '',
-    customer: { name },
-    brand: body.brand || '',
-    brandName: body.brandName || '',
-    denom,
-    qty,
-    pins,
-    memo: body.memo || '',
-    source: 'admin',
-  };
-
+  let result;
   try {
-    db.insertPayout(record);
+    result = db.createOrAppendPayout({
+      createdAt,
+      orderNo: (body.orderNo || '').trim(),
+      customerName: name,
+      brand: body.brand || '',
+      brandName: body.brandName || '',
+      denom,
+      qty,
+      pins,
+      memo: body.memo || '',
+      source: 'admin',
+    });
   } catch (e) {
     return res.status(400).json({ error: `저장 실패: ${e.message}` });
   }
 
-  res.status(201).json({ ...record, images: [] });
+  res.status(201).json({ payoutId: result.payoutId, itemId: result.itemId, merged: result.merged });
 });
 
-app.post('/api/payouts/:id/images', requireAdmin, upload.array('images', 10), (req, res) => {
-  const { id } = req.params;
+// 액면(아이템) 단위로 사진을 첨부합니다. 지급 등록 폼은 액면 하나만 입력하므로,
+// 방금 POST /api/payouts 로 만든 itemId를 그대로 넘겨주면 됩니다.
+app.post('/api/payout-items/:itemId/images', requireAdmin, upload.array('images', 10), (req, res) => {
+  const { itemId } = req.params;
   const files = req.files || [];
   const imageIds = files.map((f) => {
-    const imageId = `${id}-${crypto.randomUUID()}`;
-    db.addImage(id, imageId, f.filename, f.mimetype);
+    const imageId = `${itemId}-${crypto.randomUUID()}`;
+    db.addImage(itemId, imageId, f.filename, f.mimetype);
     return imageId;
   });
   res.status(201).json({ images: imageIds });

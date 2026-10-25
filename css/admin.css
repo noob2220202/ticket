@@ -418,6 +418,17 @@ table.invoice-items {
   word-break: break-all;
 }
 
+.payout-pin-group + .payout-pin-group {
+  margin-top: 12px;
+}
+
+.payout-pin-group-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 4px;
+}
+
 .admin-tabs {
   display: flex;
   gap: 4px;
