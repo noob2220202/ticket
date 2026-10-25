@@ -124,6 +124,13 @@ function isAuthed() {
   return adminStorage.getItem('adminAuthed') === '1';
 }
 
+// 지급내역 API(서버 DB) 호출 시 보낼 인증 토큰입니다. 관리자 비밀번호를 그대로
+// 쓰는 건 기존 게이트와 동일한 수준의 보호이며(소스에 노출됨), 실제 보안 수단은
+// 아닙니다. server/index.js 의 ADMIN_PASSWORD와 반드시 일치해야 합니다.
+function getAdminToken() {
+  return adminStorage.getItem('adminToken') || '';
+}
+
 function showDashboard() {
   gate.hidden = true;
   dashboard.hidden = false;
@@ -135,6 +142,7 @@ if (gateForm) {
     e.preventDefault();
     if (gateInput.value === ADMIN_PASSWORD) {
       adminStorage.setItem('adminAuthed', '1');
+      adminStorage.setItem('adminToken', gateInput.value);
       gateError.textContent = '';
       showDashboard();
     } else {
@@ -147,6 +155,7 @@ const logoutBtn = document.getElementById('adminLogout');
 if (logoutBtn) {
   logoutBtn.addEventListener('click', () => {
     adminStorage.removeItem('adminAuthed');
+    adminStorage.removeItem('adminToken');
     dashboard.hidden = true;
     gate.hidden = false;
     gateInput.value = '';

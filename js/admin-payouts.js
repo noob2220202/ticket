@@ -1,22 +1,64 @@
 // 관리자 "지급내역" 탭: 고객에게 전달한 상품권(핀번호·사진)을 인보이스와 별도로 기록/조회합니다.
-// js/admin.js 의 공용 함수(escapeHtml, putImage/getImage/deleteImage, imageSrc 등)를 사용하므로
-// 반드시 admin.js 뒤에 로드해야 합니다. 텍스트 데이터는 localStorage, 사진 원본은 IndexedDB에 저장합니다.
+// js/admin.js 의 공용 함수(escapeHtml, won, fmtDate, getAdminToken 등)를 사용하므로
+// 반드시 admin.js 뒤에 로드해야 합니다.
+//
+// 데이터는 더 이상 브라우저 localStorage/IndexedDB에만 있지 않고, 서버(server/index.js)의
+// SQLite DB(data/payouts.db)에 실제로 저장됩니다. 그래야 브라우저/기기를 바꿔도, 서버를
+// 재시작해도 지급내역과 사진이 그대로 남습니다.
 
-const PAYOUTS_KEY = 'kk_admin_payouts';
+const PAYOUTS_API = '/api/payouts';
 
-function loadPayouts() {
-  try {
-    return JSON.parse(adminInvoiceStorage.getItem(PAYOUTS_KEY)) || [];
-  } catch (e) {
-    return [];
-  }
+function payoutAuthHeaders(extra) {
+  return Object.assign({ 'x-admin-token': getAdminToken() }, extra || {});
 }
 
-function savePayouts(list) {
-  adminInvoiceStorage.setItem(PAYOUTS_KEY, JSON.stringify(list));
+async function apiListPayouts() {
+  const res = await fetch(PAYOUTS_API, { headers: payoutAuthHeaders() });
+  if (!res.ok) throw new Error('지급내역을 불러오지 못했습니다.');
+  return res.json();
 }
 
-let payouts = loadPayouts();
+async function apiCreatePayout(payload) {
+  const res = await fetch(PAYOUTS_API, {
+    method: 'POST',
+    headers: payoutAuthHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || '저장에 실패했습니다.');
+  return data;
+}
+
+async function apiUploadPayoutImages(id, files) {
+  const form = new FormData();
+  files.forEach((file) => form.append('images', file));
+  const res = await fetch(`${PAYOUTS_API}/${encodeURIComponent(id)}/images`, {
+    method: 'POST',
+    headers: payoutAuthHeaders(),
+    body: form,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || '사진 업로드에 실패했습니다.');
+  return data.images || [];
+}
+
+async function apiDeletePayout(id) {
+  const res = await fetch(`${PAYOUTS_API}/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: payoutAuthHeaders(),
+  });
+  if (!res.ok && res.status !== 204) throw new Error('삭제에 실패했습니다.');
+}
+
+function payoutImageUrl(imageId) {
+  return `/api/images/${encodeURIComponent(imageId)}?token=${encodeURIComponent(getAdminToken())}`;
+}
+
+let payouts = [];
+
+async function reloadPayouts() {
+  payouts = await apiListPayouts();
+}
 
 // ---- 탭 전환 ----
 
@@ -42,14 +84,22 @@ document.querySelectorAll('.admin-tab').forEach((btn) => {
 
 // ---- 목록 ----
 
-const payoutImageUrls = [];
 const payoutKeywordInput = document.getElementById('payoutKeyword');
 
-function renderPayouts() {
+async function renderPayouts() {
   const tbody = document.getElementById('payoutTableBody');
   const empty = document.getElementById('payoutEmpty');
+
+  try {
+    await reloadPayouts();
+  } catch (err) {
+    tbody.innerHTML = '';
+    empty.hidden = false;
+    empty.textContent = err.message || '지급내역을 불러오지 못했습니다.';
+    return;
+  }
+
   tbody.innerHTML = '';
-  revokeUrls(payoutImageUrls);
 
   const keyword = payoutKeywordInput.value.trim().toLowerCase();
   const list = payouts.filter((p) => {
@@ -82,26 +132,17 @@ function renderPayouts() {
 
     if (imageIds.length) {
       const box = tr.querySelector('.payout-thumbs');
-      Promise.all(imageIds.map((id) => getImage(id).catch(() => null))).then((values) => {
-        const found = values.filter(Boolean);
-        if (!box.isConnected) return;
-        if (!found.length) {
-          box.textContent = '불러오기 실패';
-          return;
-        }
-        found.forEach((value) => {
-          const src = imageSrc(value, payoutImageUrls);
-          const link = document.createElement('a');
-          link.href = src;
-          link.target = '_blank';
-          link.rel = 'noopener';
-          link.title = '클릭하면 원본 크기로 열립니다';
-          const img = new Image();
-          img.src = src;
-          img.alt = '상품권 사진';
-          link.appendChild(img);
-          box.appendChild(link);
-        });
+      imageIds.forEach((id) => {
+        const link = document.createElement('a');
+        link.href = payoutImageUrl(id);
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.title = '클릭하면 원본 크기로 열립니다';
+        const img = new Image();
+        img.src = payoutImageUrl(id);
+        img.alt = '상품권 사진';
+        link.appendChild(img);
+        box.appendChild(link);
       });
     }
 
@@ -115,12 +156,15 @@ function renderPayouts() {
   });
 }
 
-function deletePayout(p) {
+async function deletePayout(p) {
   if (!window.confirm('이 지급내역을 삭제할까요? 사진과 핀번호도 함께 삭제되며 되돌릴 수 없습니다.')) return false;
-  (p.images || []).forEach((id) => deleteImage(id).catch(() => {}));
-  payouts = payouts.filter((x) => x.id !== p.id);
-  savePayouts(payouts);
-  renderPayouts();
+  try {
+    await apiDeletePayout(p.id);
+  } catch (err) {
+    window.alert(err.message || '삭제에 실패했습니다.');
+    return false;
+  }
+  await renderPayouts();
   return true;
 }
 
@@ -233,40 +277,22 @@ payoutForm.addEventListener('submit', async (e) => {
   }
 
   const createdAt = dateVal ? new Date(dateVal).toISOString() : new Date().toISOString();
-  const id = `PO-${createdAt.slice(0, 10).replace(/-/g, '')}-${Date.now().toString(36).toUpperCase()}`;
 
-  const record = {
-    id,
-    createdAt,
-    orderNo,
-    customer: { name },
-    brand,
-    brandName,
-    denom,
-    qty,
-    pins,
-    images: [],
-    memo,
-  };
+  submitBtn.disabled = true;
+  try {
+    const record = await apiCreatePayout({
+      createdAt, orderNo, customerName: name, brand, brandName, denom, qty, pins, memo,
+    });
 
-  if (payoutPendingImages.length) {
-    const imageIds = payoutPendingImages.map((_, i) => `${id}-img${i + 1}`);
-    submitBtn.disabled = true;
-    try {
-      if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
-      await Promise.all(payoutPendingImages.map((file, i) => putImage(imageIds[i], file)));
-    } catch (err) {
-      imageIds.forEach((imageId) => deleteImage(imageId).catch(() => {}));
-      showPayoutError('이 브라우저에서는 사진을 저장할 수 없습니다. 사진을 빼고 다시 시도해주세요.');
-      return;
-    } finally {
-      submitBtn.disabled = false;
+    if (payoutPendingImages.length) {
+      await apiUploadPayoutImages(record.id, payoutPendingImages);
     }
-    record.images = imageIds;
+  } catch (err) {
+    showPayoutError(err.message || '저장에 실패했습니다.');
+    submitBtn.disabled = false;
+    return;
   }
-
-  payouts.unshift(record);
-  savePayouts(payouts);
+  submitBtn.disabled = false;
 
   payoutPendingImages = [];
   renderPayoutPreview();
@@ -278,18 +304,15 @@ payoutForm.addEventListener('submit', async (e) => {
 
 const payoutDetailOverlay = document.getElementById('payoutDetailOverlay');
 const payoutDetailBody = document.getElementById('payoutDetailBody');
-const payoutDetailUrls = [];
 let currentPayout = null;
 
 function closePayoutDetail() {
   payoutDetailOverlay.hidden = true;
-  revokeUrls(payoutDetailUrls);
   currentPayout = null;
 }
 
 function openPayoutDetail(p) {
   currentPayout = p;
-  revokeUrls(payoutDetailUrls);
   const pins = Array.isArray(p.pins) ? p.pins : [];
   const imageIds = Array.isArray(p.images) ? p.images : [];
 
@@ -361,26 +384,17 @@ function openPayoutDetail(p) {
 
   if (imageIds.length) {
     const box = document.getElementById('payoutDetailImages');
-    Promise.all(imageIds.map((id) => getImage(id).catch(() => null))).then((values) => {
-      const found = values.filter(Boolean);
-      if (!box.isConnected) return;
-      if (!found.length) {
-        box.textContent = '저장된 사진을 불러올 수 없습니다. (다른 브라우저/기기에서 등록한 건은 사진이 보이지 않습니다.)';
-        return;
-      }
-      found.forEach((value) => {
-        const src = imageSrc(value, payoutDetailUrls);
-        const link = document.createElement('a');
-        link.href = src;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        link.title = '클릭하면 원본 크기로 열립니다';
-        const img = new Image();
-        img.src = src;
-        img.alt = '상품권 사진';
-        link.appendChild(img);
-        box.appendChild(link);
-      });
+    imageIds.forEach((id) => {
+      const link = document.createElement('a');
+      link.href = payoutImageUrl(id);
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.title = '클릭하면 원본 크기로 열립니다';
+      const img = new Image();
+      img.src = payoutImageUrl(id);
+      img.alt = '상품권 사진';
+      link.appendChild(img);
+      box.appendChild(link);
     });
   }
 
@@ -392,8 +406,8 @@ payoutDetailOverlay.addEventListener('click', (e) => {
   if (e.target === payoutDetailOverlay) closePayoutDetail();
 });
 
-document.getElementById('payoutDetailDelete').addEventListener('click', () => {
-  if (currentPayout && deletePayout(currentPayout)) closePayoutDetail();
+document.getElementById('payoutDetailDelete').addEventListener('click', async () => {
+  if (currentPayout && (await deletePayout(currentPayout))) closePayoutDetail();
 });
 
 // 사진이 모두 로드된 뒤 인쇄하고, 저장되는 PDF 파일명이 지급내역서_번호가 되도록 제목을 잠시 바꿉니다.
@@ -414,4 +428,4 @@ document.getElementById('payoutDetailPrint').addEventListener('click', async () 
   window.print();
 });
 
-renderPayouts();
+if (isAuthed()) renderPayouts();
