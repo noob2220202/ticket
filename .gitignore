@@ -5,7 +5,8 @@ uploads/*
 data/*.db-journal
 data/*.db-wal
 data/*.db-shm
-# 사이트별 DB(data/payouts-<PORT>.db)는 각 서버에서 알아서 생성됩니다.
-# 복드림.store(9016)에 모여 있던 기존 데이터만 예외로 커밋해 둡니다.
+# 사이트별 DB(data/payouts-<PORT>.db)는 기본적으로 각 서버가 알아서 생성합니다.
+# 미리 채워 넣은 이전 데이터가 있는 사이트만 예외로 커밋해 둡니다.
 data/payouts-*.db
 !data/payouts-9016.db
+!data/payouts-9019.db
