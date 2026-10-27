@@ -11,8 +11,9 @@ module.exports = {
       // 사이트 2: ticketbokdream.shop (대표자 양동헌)
       // 같은 정적 파일을 다른 포트로 서빙합니다. 대표자명/연락처는
       // js/site-config.js 가 접속 도메인에 맞춰 표시합니다.
-      // 지급내역(payouts) 데이터는 5개 프로세스가 모두 같은
-      // data/payouts.db 파일을 공유합니다(server/db.js 참고).
+      // 지급내역(payouts) 데이터는 사이트(PORT)별로 완전히 분리됩니다
+      // (data/payouts-<PORT>.db, server/db.js 참고). 복드림.store(9016)가
+      // 기존에 모여 있던 데이터를 그대로 이어받았고, 나머지는 빈 DB로 시작합니다.
       name: "bokdream-ticket-shop-2",
       script: "server/index.js",
       cwd: __dirname,

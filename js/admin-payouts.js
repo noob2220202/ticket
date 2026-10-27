@@ -3,7 +3,7 @@
 // 반드시 admin.js 뒤에 로드해야 합니다.
 //
 // 데이터는 더 이상 브라우저 localStorage/IndexedDB에만 있지 않고, 서버(server/index.js)의
-// SQLite DB(data/payouts.db)에 실제로 저장됩니다. 그래야 브라우저/기기를 바꿔도, 서버를
+// SQLite DB(사이트별 data/payouts-<PORT>.db)에 실제로 저장됩니다. 그래야 브라우저/기기를 바꿔도, 서버를
 // 재시작해도 지급내역과 사진이 그대로 남습니다.
 //
 // 지급내역 1건(payout)은 "거래" 단위이며, 그 안에 액면별 아이템(items)이 여러 개

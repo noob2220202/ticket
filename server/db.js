@@ -1,7 +1,11 @@
 // 지급내역(payouts) 데이터를 실제로 영속 저장하는 SQLite DB.
 // Node 22+ 내장 모듈(node:sqlite)을 사용해 별도 네이티브 빌드 없이 동작합니다.
-// 여러 도메인(ecosystem.config.js의 5개 프로세스)이 같은 파일을 보도록
-// 경로를 repo 루트의 data/payouts.db 로 고정합니다.
+//
+// 사이트(도메인)마다 DB를 따로 둡니다. ecosystem.config.js가 사이트별로 다른
+// PORT를 주입하므로, 그 PORT를 파일명에 넣어 data/payouts-<PORT>.db 로
+// 분리합니다. 기존에는 5개 사이트가 전부 data/payouts.db 하나를 공유해서
+// 어느 도메인으로 들어가든 지급내역이 똑같이 보였는데, 이제는 사이트별로
+// 완전히 독립된 데이터를 가집니다(복드림.store=9016 이 기존 데이터를 이어받음).
 //
 // 한 "거래"(payouts)는 여러 액면(payout_items)을 포함할 수 있습니다.
 // 예: 입금 1건을 50만원×7 + 10만원×2 + 1만원×1 로 지급한 경우,
@@ -14,7 +18,8 @@ const fs = require('fs');
 const DATA_DIR = path.join(__dirname, '..', 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const DB_PATH = path.join(DATA_DIR, 'payouts.db');
+const PORT = process.env.PORT || 9011;
+const DB_PATH = path.join(DATA_DIR, `payouts-${PORT}.db`);
 const db = new DatabaseSync(DB_PATH);
 
 // WAL 모드: 여러 프로세스(포트별 서버)가 동시에 같은 파일에 접근해도 안전하게.

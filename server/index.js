@@ -2,7 +2,7 @@
 // 기존에는 `npx serve .` 로만 정적 파일을 서빙했는데, 지급내역을 브라우저
 // localStorage/IndexedDB가 아니라 서버 쪽 SQLite DB에 실제로 저장하기 위해
 // 이 서버를 추가했습니다. ecosystem.config.js의 각 사이트(포트)가 이 서버를
-// 각각 띄우고, 모두 같은 data/payouts.db 파일을 공유합니다.
+// 각각 띄우고, 사이트(포트)별로 별도의 data/payouts-<PORT>.db 파일을 씁니다.
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
