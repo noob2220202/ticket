@@ -12,6 +12,7 @@
     // 전화번호를 아예 노출하지 않는 도메인은 phone 대신 hidePhone을 씁니다.
     'bokdreamticket.shop': { owner: '박성현', hidePhone: true },
     'bokdream.store': { owner: '황보경애', phone: '010-6266-6699' },
+    'bokdream1.store': { owner: '이승우', phone: '010-8140-3019' },
   };
 
   var host = window.location.hostname.replace(/^www\./, '');

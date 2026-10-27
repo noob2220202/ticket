@@ -39,5 +39,12 @@ module.exports = {
       cwd: __dirname,
       env: { NODE_ENV: "production", PORT: 9018 },
     },
+    {
+      // 사이트 6: bokdream1.store (대표자 이승우)
+      name: "bokdream-ticket-shop-6",
+      script: "server/index.js",
+      cwd: __dirname,
+      env: { NODE_ENV: "production", PORT: 9019 },
+    },
   ],
 };
