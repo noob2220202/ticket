@@ -48,7 +48,7 @@ module.exports = {
       env: { NODE_ENV: "production", PORT: 9019 },
     },
     {
-      // 사이트 7: 2.bokdreamticket.store (대표자 하석태, 010-5565-9634)
+      // 사이트 7: 1.bokdreamticket.store (대표자 하석태, 010-5565-9634)
       name: "bokdream-ticket-shop-7",
       script: "server/index.js",
       cwd: __dirname,
