@@ -47,5 +47,14 @@ module.exports = {
       cwd: __dirname,
       env: { NODE_ENV: "production", PORT: 9019 },
     },
+    {
+      // 사이트 7: 도메인 미정 (대표자 하석태, 010-5565-9634)
+      // 도메인이 정해지면 js/site-config.js에 호스트명 매핑 추가,
+      // Caddyfile.snippet에 리버스 프록시 블록 추가 필요.
+      name: "bokdream-ticket-shop-7",
+      script: "server/index.js",
+      cwd: __dirname,
+      env: { NODE_ENV: "production", PORT: 9020 },
+    },
   ],
 };
