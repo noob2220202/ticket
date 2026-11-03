@@ -320,6 +320,18 @@
           <label for="pQty">수량</label>
           <input type="number" id="pQty" min="1" step="1" value="1" required>
         </div>
+        <div class="form-group">
+          <label for="pSourceType">거래구분 (선택)</label>
+          <select id="pSourceType">
+            <option value="">표시 안 함</option>
+            <option value="deposit">입금</option>
+            <option value="withdrawal">출금</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pSourceAmount">실제 입금액/출금액(원, 선택)</label>
+          <input type="number" id="pSourceAmount" min="0" step="1" placeholder="지급내역서에 참고용으로 표시됩니다">
+        </div>
       </div>
 
       <div class="form-group">

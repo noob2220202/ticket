@@ -73,6 +73,7 @@ function invoiceDocHtml(p, imageUrlFor) {
       <div class="invoice-grid">
         <div><dt>지급번호</dt><dd>${escapeHtml(p.id)}</dd></div>
         <div><dt>주문번호</dt><dd>${escapeHtml(p.orderNo) || '-'}</dd></div>
+        ${p.sourceAmount != null ? `<div><dt>${p.sourceType === 'withdrawal' ? '출금액' : '입금액'}</dt><dd>${won(p.sourceAmount)}</dd></div>` : ''}
       </div>
     </div>
 

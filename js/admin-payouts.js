@@ -313,6 +313,9 @@ payoutForm.addEventListener('submit', async (e) => {
   const orderNo = document.getElementById('pOrderNo').value.trim();
   const memo = document.getElementById('pMemo').value.trim();
   const dateVal = document.getElementById('pDate').value;
+  const sourceType = document.getElementById('pSourceType').value || null;
+  const sourceAmountVal = document.getElementById('pSourceAmount').value;
+  const sourceAmount = sourceType && sourceAmountVal !== '' ? Number(sourceAmountVal) : null;
   const pins = document.getElementById('pPins').value
     .split('\n')
     .map((line) => line.trim())
@@ -337,6 +340,7 @@ payoutForm.addEventListener('submit', async (e) => {
   try {
     const result = await apiCreatePayout({
       createdAt, orderNo, customerName: name, brand, brandName, denom, qty, pins, memo,
+      sourceType, sourceAmount,
     });
 
     if (payoutPendingImages.length) {
@@ -389,6 +393,7 @@ function openPayoutDetail(p) {
       <div class="invoice-grid">
         <div><dt>지급번호</dt><dd>${escapeHtml(p.id)}</dd></div>
         <div><dt>주문번호</dt><dd>${escapeHtml(p.orderNo) || '-'}</dd></div>
+        ${p.sourceAmount != null ? `<div><dt>${p.sourceType === 'withdrawal' ? '출금액' : '입금액'}</dt><dd>${won(p.sourceAmount)}</dd></div>` : ''}
       </div>
     </div>
 

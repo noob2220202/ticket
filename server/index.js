@@ -75,6 +75,9 @@ app.post('/api/payouts', requireAdmin, (req, res) => {
   }
 
   const createdAt = body.createdAt ? new Date(body.createdAt).toISOString() : new Date().toISOString();
+  const sourceType = ['deposit', 'withdrawal'].includes(body.sourceType) ? body.sourceType : null;
+  const sourceAmount = sourceType && body.sourceAmount !== '' && body.sourceAmount != null
+    ? Number(body.sourceAmount) : null;
 
   let result;
   try {
@@ -89,6 +92,8 @@ app.post('/api/payouts', requireAdmin, (req, res) => {
       pins,
       memo: body.memo || '',
       source: 'admin',
+      sourceAmount,
+      sourceType,
     });
   } catch (e) {
     return res.status(400).json({ error: `저장 실패: ${e.message}` });

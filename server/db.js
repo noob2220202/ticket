@@ -66,6 +66,18 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_payout_images_item_id ON payout_images(item_id);
 `);
 
+// 실제 입금액/출금액(참고용, 지급내역서에 액면가와 나란히 표시). 기존에 이미
+// 만들어진 payouts 테이블에는 없는 컬럼이라, 없으면 추가합니다(기존 DB마다
+// 한 번씩만 실행되고 이후엔 조용히 건너뜀). 과거에 만든 지급내역은 이 값이
+// 없어 NULL로 남고, 화면/PDF에서는 '-'로 표시됩니다.
+const payoutColumns = db.prepare("PRAGMA table_info(payouts)").all().map((c) => c.name);
+if (!payoutColumns.includes('source_amount')) {
+  db.exec('ALTER TABLE payouts ADD COLUMN source_amount INTEGER');
+}
+if (!payoutColumns.includes('source_type')) {
+  db.exec('ALTER TABLE payouts ADD COLUMN source_type TEXT');
+}
+
 function listPayouts() {
   const payoutRows = db.prepare('SELECT * FROM payouts ORDER BY created_at DESC, id DESC').all();
   const itemRows = db.prepare('SELECT * FROM payout_items ORDER BY rowid ASC').all();
@@ -96,6 +108,8 @@ function listPayouts() {
     brand: r.brand || '',
     brandName: r.brand_name || '',
     memo: r.memo || '',
+    sourceAmount: r.source_amount == null ? null : r.source_amount,
+    sourceType: r.source_type || null,
     items: itemsByPayout[r.id] || [],
   }));
 }
@@ -122,8 +136,8 @@ function createOrAppendPayout(input) {
     // 생성하고, order_no는 병합 검색용 별도 컬럼으로만 씁니다.
     payoutId = input.id || `PO-${input.createdAt.slice(0, 10).replace(/-/g, '')}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     db.prepare(`
-      INSERT INTO payouts (id, order_no, created_at, customer_name, brand, brand_name, memo, source)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO payouts (id, order_no, created_at, customer_name, brand, brand_name, memo, source, source_amount, source_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       payoutId,
       input.orderNo || '',
@@ -133,6 +147,8 @@ function createOrAppendPayout(input) {
       input.brandName || '',
       input.memo || '',
       input.source || 'admin',
+      input.sourceAmount == null ? null : input.sourceAmount,
+      input.sourceType || null,
     );
   }
 
@@ -152,8 +168,8 @@ function createOrAppendPayout(input) {
 //           items: [{ id?, denom, qty, pins: [] }] }
 function insertPayoutWithItems(record) {
   db.prepare(`
-    INSERT INTO payouts (id, order_no, created_at, customer_name, brand, brand_name, memo, source)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO payouts (id, order_no, created_at, customer_name, brand, brand_name, memo, source, source_amount, source_type)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     record.id,
     record.orderNo || '',
@@ -163,6 +179,8 @@ function insertPayoutWithItems(record) {
     record.brandName || '',
     record.memo || '',
     record.source || 'admin',
+    record.sourceAmount == null ? null : record.sourceAmount,
+    record.sourceType || null,
   );
 
   const insertItem = db.prepare('INSERT INTO payout_items (id, payout_id, denom, qty) VALUES (?, ?, ?, ?)');
