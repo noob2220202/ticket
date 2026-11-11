@@ -16,6 +16,7 @@
     '1.bokdreamticket.store': { owner: '하석태', phone: '010-5565-9634' },
     '2.bokdreamticket.store': { owner: '김택현', phone: '010-4201-5455' },
     '4.bokdreamticket.store': { owner: '조광연', phone: '010-5620-9257' },
+    '5.bokdreamticket.store': { owner: '양정수', phone: '010-8209-5136' },
   };
 
   var host = window.location.hostname.replace(/^www\./, '');
