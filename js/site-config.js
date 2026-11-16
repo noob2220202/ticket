@@ -1,7 +1,20 @@
 // 도메인(호스트명)별로 달라지는 사업자 정보를 적용합니다.
-// 같은 코드베이스를 여러 도메인에서 서빙할 때, 표시되는 대표자명/연락처를
-// 호스트명에 맞춰 바꿉니다. 매칭되는 항목이 없으면 HTML의 기본값을 유지합니다.
+// 같은 코드베이스를 여러 도메인에서 서빙할 때, 표시되는 상호/대표자/
+// 사업자등록번호/주소/연락처를 호스트명에 맞춰 바꿉니다. 매칭되는 항목이
+// 없으면 기본값(복드림 상품권)을 유지합니다.
+//
+// window.BOKDREAM_BIZ_INFO 로 항상 "이 도메인에 적용되는 최종 사업자 정보"를
+// 전역에 노출합니다. index.html의 푸터뿐 아니라, admin.html에 이 스크립트를
+// 먼저 불러두면 js/admin-payouts.js의 지급내역서(PDF) 상단에도 같은 정보를
+// 그대로 씁니다(관리자 페이지에는 .biz-info 같은 DOM이 없어서 아래 DOM 갱신
+// 부분은 조용히 건너뜁니다).
 (function () {
+  var DEFAULT_BIZ = {
+    bizName: '복드림 상품권',
+    bizRegNo: '623-70-00295',
+    bizAddress: '서울특별시 성동구 천호대로 430, 1층 103호(용답동)',
+  };
+
   var SITE_CONFIG = {
     'bokdreamticket.store': { owner: '김상현', phone: '010-6497-7010' },
     'ticketbokdream.shop': { owner: '양동헌', phone: '010-8113-7635' },
@@ -18,11 +31,39 @@
     '4.bokdreamticket.store': { owner: '조광연', phone: '010-5620-9257' },
     '5.bokdreamticket.store': { owner: '양정수', phone: '010-8209-5136' },
     'ticketbokdream.store': { owner: '정대원', phone: '010-2657-4587' },
+    // 이 사이트만 실제 사업자등록증(법인)이 따로 있어 상호/등록번호/주소까지 교체합니다.
+    'bok-dreamticket.store': {
+      owner: '최봄',
+      phone: '010-9696-8448',
+      bizName: '(주)에스에스에프앤비',
+      bizRegNo: '478-88-03080',
+      bizAddress: '경기도 양주시 옥정동로5바길 16(옥정동)',
+    },
   };
 
   var host = window.location.hostname.replace(/^www\./, '');
-  var cfg = SITE_CONFIG[host];
-  if (!cfg) return;
+  var cfg = SITE_CONFIG[host] || {};
+
+  var resolved = {
+    owner: cfg.owner || null,
+    phone: cfg.hidePhone ? null : (cfg.phone || null),
+    hidePhone: Boolean(cfg.hidePhone),
+    bizName: cfg.bizName || DEFAULT_BIZ.bizName,
+    bizRegNo: cfg.bizRegNo || DEFAULT_BIZ.bizRegNo,
+    bizAddress: cfg.bizAddress || DEFAULT_BIZ.bizAddress,
+  };
+  window.BOKDREAM_BIZ_INFO = resolved;
+
+  if (!SITE_CONFIG[host]) return; // 매칭 안 되면 HTML 기본값 그대로 두고 끝.
+
+  var nameEl = document.getElementById('bizName');
+  if (nameEl) nameEl.textContent = resolved.bizName;
+
+  var regNoEl = document.getElementById('bizRegNo');
+  if (regNoEl) regNoEl.textContent = resolved.bizRegNo;
+
+  var addressEl = document.getElementById('bizAddress');
+  if (addressEl) addressEl.textContent = resolved.bizAddress;
 
   if (cfg.owner) {
     var ownerEl = document.getElementById('bizOwner');

@@ -12,6 +12,15 @@
 
 const PAYOUTS_API = '/api/payouts';
 
+// js/site-config.js가 admin.html에서도 먼저 로드되면서 접속 도메인에 맞는
+// 상호/사업자등록번호/주소를 window.BOKDREAM_BIZ_INFO로 넘겨줍니다(없으면
+// 기본값인 복드림 상품권 정보를 그대로 씁니다).
+const BIZ_INFO = window.BOKDREAM_BIZ_INFO || {
+  bizName: '복드림 상품권',
+  bizRegNo: '623-70-00295',
+  bizAddress: '서울특별시 성동구 천호대로 430, 1층 103호(용답동)',
+};
+
 function payoutAuthHeaders(extra) {
   return Object.assign({ 'x-admin-token': getAdminToken() }, extra || {});
 }
@@ -383,9 +392,9 @@ function openPayoutDetail(p) {
         <div class="invoice-no">${escapeHtml(p.id)} · 지급일 ${fmtDate(p.createdAt)}</div>
       </div>
       <div class="invoice-brand">
-        <strong>복드림 상품권</strong>
-        사업자등록번호 623-70-00295<br>
-        서울특별시 성동구 천호대로 430, 1층 103호(용답동)
+        <strong>${escapeHtml(BIZ_INFO.bizName)}</strong>
+        사업자등록번호 ${escapeHtml(BIZ_INFO.bizRegNo)}<br>
+        ${escapeHtml(BIZ_INFO.bizAddress)}
       </div>
     </div>
 

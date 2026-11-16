@@ -82,5 +82,15 @@ module.exports = {
       cwd: __dirname,
       env: { NODE_ENV: "production", PORT: 9024 },
     },
+    {
+      // 사이트 12: bok-dreamticket.store (대표자 최봄, 010-9696-8448)
+      // 이 사이트만 실제 사업자등록증((주)에스에스에프앤비)이 따로 있어서
+      // 푸터와 지급내역서(PDF) 상호/등록번호/주소까지 교체됩니다
+      // (js/site-config.js, server/site-biz-info.js 참고).
+      name: "bokdream-ticket-shop-12",
+      script: "server/index.js",
+      cwd: __dirname,
+      env: { NODE_ENV: "production", PORT: 9025 },
+    },
   ],
 };

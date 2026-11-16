@@ -6,6 +6,8 @@
 // admin-payouts.js의 openPayoutDetail() 템플릿을 고치면 이 파일도 같이 고쳐야
 // 디자인이 계속 일치합니다.
 
+const { getBizInfo } = require('./site-biz-info');
+
 function escapeHtml(str) {
   return String(str == null ? '' : str)
     .replace(/&/g, '&amp;')
@@ -32,6 +34,7 @@ function payoutTotal(p) {
 function invoiceDocHtml(p, imageUrlFor) {
   const items = Array.isArray(p.items) ? p.items : [];
   const total = payoutTotal(p);
+  const biz = getBizInfo();
 
   const itemRows = items.map((it) => `
           <tr>
@@ -62,9 +65,9 @@ function invoiceDocHtml(p, imageUrlFor) {
         <div class="invoice-no">${escapeHtml(p.id)} · 지급일 ${fmtDate(p.createdAt)}</div>
       </div>
       <div class="invoice-brand">
-        <strong>복드림 상품권</strong>
-        사업자등록번호 623-70-00295<br>
-        서울특별시 성동구 천호대로 430, 1층 103호(용답동)
+        <strong>${escapeHtml(biz.bizName)}</strong>
+        사업자등록번호 ${escapeHtml(biz.bizRegNo)}<br>
+        ${escapeHtml(biz.bizAddress)}
       </div>
     </div>
 
