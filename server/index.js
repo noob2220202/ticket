@@ -174,10 +174,14 @@ app.get('/api/payouts/export-zip', requireAdmin, async (req, res) => {
     });
   }
 
+  // 바깥쪽 zip 파일명도 영문/숫자로: filename=""(ASCII)과 filename*=UTF-8''(인코딩)
+  // 둘 다 내려줘서, UTF-8 파일명을 못 읽는 프로그램은 영문 이름으로 떨어지게 합니다.
+  const asciiName = `payouts_${dateStamp}.zip`;
+  const utf8Name = `${encodeURIComponent(`지급내역서_${safeKeyword}_${dateStamp}`)}.zip`;
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader(
     'Content-Disposition',
-    `attachment; filename="${encodeURIComponent(`지급내역서_${safeKeyword}_${dateStamp}`)}.zip"`,
+    `attachment; filename="${asciiName}"; filename*=UTF-8''${utf8Name}`,
   );
 
   const archive = new ZipArchive({ zlib: { level: 9 } });
@@ -198,8 +202,11 @@ app.get('/api/payouts/export-zip', requireAdmin, async (req, res) => {
       const buffer = await page.pdf({ format: 'A4', printBackground: true });
       await page.close();
 
-      let name = `지급내역서_${payout.id}.pdf`;
-      while (usedNames.has(name)) name = `지급내역서_${payout.id}-${crypto.randomUUID().slice(0, 4)}.pdf`;
+      // zip 안의 파일명은 한글 대신 영문/숫자만 씁니다. 일부 압축 해제 프로그램
+      // (특히 윈도우 기본 탐색기)이 zip 안의 UTF-8 파일명을 제대로 못 읽어서
+      // "파일이 깨졌다"는 오류나 깨진 글자로 보이는 문제가 있었습니다.
+      let name = `payout_${payout.id}.pdf`;
+      while (usedNames.has(name)) name = `payout_${payout.id}-${crypto.randomUUID().slice(0, 4)}.pdf`;
       usedNames.add(name);
       archive.append(buffer, { name });
     }
