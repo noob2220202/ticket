@@ -77,6 +77,10 @@ if (!payoutColumns.includes('source_amount')) {
 if (!payoutColumns.includes('source_type')) {
   db.exec('ALTER TABLE payouts ADD COLUMN source_type TEXT');
 }
+// 고객이 알려준 계좌(은행 + 계좌번호) 등 참고용 연락 정보. 예: "우리 13608132365".
+if (!payoutColumns.includes('account_info')) {
+  db.exec('ALTER TABLE payouts ADD COLUMN account_info TEXT');
+}
 
 function listPayouts() {
   const payoutRows = db.prepare('SELECT * FROM payouts ORDER BY created_at DESC, id DESC').all();
@@ -110,6 +114,7 @@ function listPayouts() {
     memo: r.memo || '',
     sourceAmount: r.source_amount == null ? null : r.source_amount,
     sourceType: r.source_type || null,
+    accountInfo: r.account_info || null,
     items: itemsByPayout[r.id] || [],
   }));
 }
@@ -136,8 +141,8 @@ function createOrAppendPayout(input) {
     // 생성하고, order_no는 병합 검색용 별도 컬럼으로만 씁니다.
     payoutId = input.id || `PO-${input.createdAt.slice(0, 10).replace(/-/g, '')}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     db.prepare(`
-      INSERT INTO payouts (id, order_no, created_at, customer_name, brand, brand_name, memo, source, source_amount, source_type)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO payouts (id, order_no, created_at, customer_name, brand, brand_name, memo, source, source_amount, source_type, account_info)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       payoutId,
       input.orderNo || '',
@@ -149,6 +154,7 @@ function createOrAppendPayout(input) {
       input.source || 'admin',
       input.sourceAmount == null ? null : input.sourceAmount,
       input.sourceType || null,
+      input.accountInfo || null,
     );
   }
 
@@ -168,8 +174,8 @@ function createOrAppendPayout(input) {
 //           items: [{ id?, denom, qty, pins: [] }] }
 function insertPayoutWithItems(record) {
   db.prepare(`
-    INSERT INTO payouts (id, order_no, created_at, customer_name, brand, brand_name, memo, source, source_amount, source_type)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO payouts (id, order_no, created_at, customer_name, brand, brand_name, memo, source, source_amount, source_type, account_info)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     record.id,
     record.orderNo || '',
@@ -181,6 +187,7 @@ function insertPayoutWithItems(record) {
     record.source || 'admin',
     record.sourceAmount == null ? null : record.sourceAmount,
     record.sourceType || null,
+    record.accountInfo || null,
   );
 
   const insertItem = db.prepare('INSERT INTO payout_items (id, payout_id, denom, qty) VALUES (?, ?, ?, ?)');

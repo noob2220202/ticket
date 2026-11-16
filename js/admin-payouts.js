@@ -316,6 +316,7 @@ payoutForm.addEventListener('submit', async (e) => {
   const sourceType = document.getElementById('pSourceType').value || null;
   const sourceAmountVal = document.getElementById('pSourceAmount').value;
   const sourceAmount = sourceType && sourceAmountVal !== '' ? Number(sourceAmountVal) : null;
+  const accountInfo = document.getElementById('pAccountInfo').value.trim() || null;
   const pins = document.getElementById('pPins').value
     .split('\n')
     .map((line) => line.trim())
@@ -340,7 +341,7 @@ payoutForm.addEventListener('submit', async (e) => {
   try {
     const result = await apiCreatePayout({
       createdAt, orderNo, customerName: name, brand, brandName, denom, qty, pins, memo,
-      sourceType, sourceAmount,
+      sourceType, sourceAmount, accountInfo,
     });
 
     if (payoutPendingImages.length) {
@@ -401,6 +402,7 @@ function openPayoutDetail(p) {
       <h3>고객 정보</h3>
       <div class="invoice-grid">
         <div><dt>고객명</dt><dd>${escapeHtml(p.customer.name)}</dd></div>
+        ${p.accountInfo ? `<div><dt>계좌 정보</dt><dd>${escapeHtml(p.accountInfo)}</dd></div>` : ''}
       </div>
     </div>
 

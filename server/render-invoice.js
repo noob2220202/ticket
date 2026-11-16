@@ -81,6 +81,7 @@ function invoiceDocHtml(p, imageUrlFor) {
       <h3>고객 정보</h3>
       <div class="invoice-grid">
         <div><dt>고객명</dt><dd>${escapeHtml(p.customer.name)}</dd></div>
+        ${p.accountInfo ? `<div><dt>계좌 정보</dt><dd>${escapeHtml(p.accountInfo)}</dd></div>` : ''}
       </div>
     </div>
 

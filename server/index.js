@@ -78,6 +78,7 @@ app.post('/api/payouts', requireAdmin, (req, res) => {
   const sourceType = ['deposit', 'withdrawal'].includes(body.sourceType) ? body.sourceType : null;
   const sourceAmount = sourceType && body.sourceAmount !== '' && body.sourceAmount != null
     ? Number(body.sourceAmount) : null;
+  const accountInfo = (body.accountInfo || '').trim() || null;
 
   let result;
   try {
@@ -94,6 +95,7 @@ app.post('/api/payouts', requireAdmin, (req, res) => {
       source: 'admin',
       sourceAmount,
       sourceType,
+      accountInfo,
     });
   } catch (e) {
     return res.status(400).json({ error: `저장 실패: ${e.message}` });
