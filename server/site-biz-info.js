@@ -10,7 +10,7 @@ const DEFAULT_BIZ = {
 
 // PORT -> 오버라이드(실제 사업자등록증이 따로 있는 사이트만 등록).
 const BIZ_BY_PORT = {
-  9025: { // bok-dreamticket.store (대표자 최봄)
+  9025: { // bok-dreamticket.store (대표자 양정수)
     bizName: '(주)에스에스에프앤비',
     bizRegNo: '478-88-03080',
     bizAddress: '경기도 양주시 옥정동로5바길 16(옥정동)',
