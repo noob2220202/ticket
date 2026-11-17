@@ -8,14 +8,9 @@ const DEFAULT_BIZ = {
   bizAddress: '서울특별시 성동구 천호대로 430, 1층 103호(용답동)',
 };
 
-// PORT -> 오버라이드(실제 사업자등록증이 따로 있는 사이트만 등록).
-const BIZ_BY_PORT = {
-  9025: { // bok-dreamticket.store (대표자 양정수)
-    bizName: '(주)에스에스에프앤비',
-    bizRegNo: '478-88-03080',
-    bizAddress: '경기도 양주시 옥정동로5바길 16(옥정동)',
-  },
-};
+// PORT -> 오버라이드(사업자등록증이 따로 있는 사이트만 등록). 지금은 전부 기본값.
+// 예: 9025: { bizName: '...', bizRegNo: '...', bizAddress: '...' },
+const BIZ_BY_PORT = {};
 
 function getBizInfo() {
   const override = BIZ_BY_PORT[process.env.PORT];

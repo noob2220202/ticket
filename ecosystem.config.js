@@ -84,9 +84,6 @@ module.exports = {
     },
     {
       // 사이트 12: bok-dreamticket.store (대표자 양정수, 010-8209-5136)
-      // 이 사이트만 실제 사업자등록증((주)에스에스에프앤비)이 따로 있어서
-      // 푸터와 지급내역서(PDF) 상호/등록번호/주소까지 교체됩니다
-      // (js/site-config.js, server/site-biz-info.js 참고).
       name: "bokdream-ticket-shop-12",
       script: "server/index.js",
       cwd: __dirname,

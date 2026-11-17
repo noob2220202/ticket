@@ -31,16 +31,10 @@
     '4.bokdreamticket.store': { owner: '조광연', phone: '010-5620-9257' },
     '5.bokdreamticket.store': { owner: '양정수', phone: '010-8209-5136' },
     'ticketbokdream.store': { owner: '정대원', phone: '010-2657-4587' },
-    // 이 사이트만 실제 사업자등록증(법인)이 따로 있어 상호/등록번호/주소까지 교체합니다.
-    // (대표자/연락처는 양정수로 정정 — 처음에 최봄으로 잘못 전달됨. 사업자등록증
-    // 자체(상호/등록번호/주소)는 그대로 유지)
-    'bok-dreamticket.store': {
-      owner: '양정수',
-      phone: '010-8209-5136',
-      bizName: '(주)에스에스에프앤비',
-      bizRegNo: '478-88-03080',
-      bizAddress: '경기도 양주시 옥정동로5바길 16(옥정동)',
-    },
+    'bok-dreamticket.store': { owner: '양정수', phone: '010-8209-5136' },
+    // 사이트별로 상호/사업자등록번호/주소가 다르면 bizName/bizRegNo/bizAddress를
+    // 추가하면 됩니다(server/site-biz-info.js에도 같은 값을 PORT 기준으로 넣어야
+    // 지급내역서 PDF에도 반영됩니다).
   };
 
   var host = window.location.hostname.replace(/^www\./, '');
