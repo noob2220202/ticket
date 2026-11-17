@@ -21,7 +21,9 @@ const won = (n) => n.toLocaleString('ko-KR') + '원';
 
 function fmtDate(iso) {
   const d = new Date(iso);
+  // 서버 시간대(UTC 등)와 무관하게 항상 한국 시간으로 표시.
   return d.toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
     year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
   });
 }
