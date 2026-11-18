@@ -33,6 +33,14 @@ function payoutTotal(p) {
 }
 
 // imageUrlFor(imageId) => 이 페이지를 띄울 때 쓸 이미지 URL(토큰 포함)
+// 출금(매입) 건은 "상품권 구매 내역서", 입금 건은 기존 "상품권 지급 내역서"로 표시합니다.
+function invoiceLabels(p) {
+  if (p && p.sourceType === 'withdrawal') {
+    return { doc: '구매', date: '구매일', info: '구매 정보', no: '구매번호', total: '구매 총액', pins: '구매한 상품권 핀번호', file: '구매내역서' };
+  }
+  return { doc: '지급', date: '지급일', info: '지급 정보', no: '지급번호', total: '지급 총액', pins: '전달된 상품권 핀번호', file: '지급내역서' };
+}
+
 function invoiceDocHtml(p, imageUrlFor) {
   const items = Array.isArray(p.items) ? p.items : [];
   const total = payoutTotal(p);
@@ -60,11 +68,12 @@ function invoiceDocHtml(p, imageUrlFor) {
           <img src="${imageUrlFor(id)}" alt="상품권 사진">
         </a>`).join('');
 
+  const L = invoiceLabels(p);
   return `
     <div class="invoice-doc-head">
       <div>
-        <h2>상품권 지급 내역서</h2>
-        <div class="invoice-no">${escapeHtml(p.id)} · 지급일 ${fmtDate(p.createdAt)}</div>
+        <h2>상품권 ${L.doc} 내역서</h2>
+        <div class="invoice-no">${escapeHtml(p.id)} · ${L.date} ${fmtDate(p.createdAt)}</div>
       </div>
       <div class="invoice-brand">
         <strong>${escapeHtml(biz.bizName)}</strong>
@@ -74,9 +83,9 @@ function invoiceDocHtml(p, imageUrlFor) {
     </div>
 
     <div class="invoice-section">
-      <h3>지급 정보</h3>
+      <h3>${L.info}</h3>
       <div class="invoice-grid">
-        <div><dt>지급번호</dt><dd>${escapeHtml(p.id)}</dd></div>
+        <div><dt>${L.no}</dt><dd>${escapeHtml(p.id)}</dd></div>
         <div><dt>주문번호</dt><dd>${escapeHtml(p.orderNo) || '-'}</dd></div>
         ${p.sourceAmount != null ? `<div><dt>${p.sourceType === 'withdrawal' ? '출금액' : '입금액'}</dt><dd>${won(p.sourceAmount)}</dd></div>` : ''}
       </div>
@@ -104,12 +113,12 @@ function invoiceDocHtml(p, imageUrlFor) {
         <tbody>${itemRows}</tbody>
       </table>
       <div class="invoice-total">
-        <span>지급 총액 <strong>${won(total)}</strong></span>
+        <span>${L.total} <strong>${won(total)}</strong></span>
       </div>
     </div>
 
     <div class="invoice-section">
-      <h3>전달된 상품권 핀번호</h3>
+      <h3>${L.pins}</h3>
       ${pinSection}
     </div>
 
@@ -136,7 +145,7 @@ function renderPrintPage(p, imageUrlFor) {
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/admin.css">
-<title>지급내역서_${escapeHtml(p.id)}</title>
+<title>${invoiceLabels(p).file}_${escapeHtml(p.id)}</title>
 </head>
 <body>
 <div class="invoice-overlay"><div class="invoice-sheet"><div class="invoice-doc">${invoiceDocHtml(p, imageUrlFor)}</div></div></div>

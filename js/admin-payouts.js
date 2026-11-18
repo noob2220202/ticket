@@ -380,16 +380,25 @@ function closePayoutDetail() {
   currentPayout = null;
 }
 
+// 출금(매입) 건은 "상품권 구매 내역서", 입금 건은 기존 "상품권 지급 내역서"로 표시합니다.
+function invoiceLabels(p) {
+  if (p && p.sourceType === 'withdrawal') {
+    return { doc: '구매', date: '구매일', info: '구매 정보', no: '구매번호', total: '구매 총액', pins: '구매한 상품권 핀번호', file: '구매내역서' };
+  }
+  return { doc: '지급', date: '지급일', info: '지급 정보', no: '지급번호', total: '지급 총액', pins: '전달된 상품권 핀번호', file: '지급내역서' };
+}
+
 function openPayoutDetail(p) {
   currentPayout = p;
   const items = Array.isArray(p.items) ? p.items : [];
   const total = payoutTotal(p);
 
+  const L = invoiceLabels(p);
   payoutDetailBody.innerHTML = `
     <div class="invoice-doc-head">
       <div>
-        <h2>상품권 지급 내역서</h2>
-        <div class="invoice-no">${escapeHtml(p.id)} · 지급일 ${fmtDate(p.createdAt)}</div>
+        <h2>상품권 ${L.doc} 내역서</h2>
+        <div class="invoice-no">${escapeHtml(p.id)} · ${L.date} ${fmtDate(p.createdAt)}</div>
       </div>
       <div class="invoice-brand">
         <strong>${escapeHtml(BIZ_INFO.bizName)}</strong>
@@ -399,9 +408,9 @@ function openPayoutDetail(p) {
     </div>
 
     <div class="invoice-section">
-      <h3>지급 정보</h3>
+      <h3>${L.info}</h3>
       <div class="invoice-grid">
-        <div><dt>지급번호</dt><dd>${escapeHtml(p.id)}</dd></div>
+        <div><dt>${L.no}</dt><dd>${escapeHtml(p.id)}</dd></div>
         <div><dt>주문번호</dt><dd>${escapeHtml(p.orderNo) || '-'}</dd></div>
         ${p.sourceAmount != null ? `<div><dt>${p.sourceType === 'withdrawal' ? '출금액' : '입금액'}</dt><dd>${won(p.sourceAmount)}</dd></div>` : ''}
       </div>
@@ -437,12 +446,12 @@ function openPayoutDetail(p) {
         </tbody>
       </table>
       <div class="invoice-total">
-        <span>지급 총액 <strong>${won(total)}</strong></span>
+        <span>${L.total} <strong>${won(total)}</strong></span>
       </div>
     </div>
 
     <div class="invoice-section">
-      <h3>전달된 상품권 핀번호</h3>
+      <h3>${L.pins}</h3>
       ${items.some((it) => it.pins.length) ? items.map((it) => (it.pins.length ? `
         <div class="payout-pin-group">
           <div class="payout-pin-group-title">${won(it.denom)} × ${it.qty}</div>
@@ -497,7 +506,7 @@ document.getElementById('payoutDetailPrint').addEventListener('click', async () 
   }))));
 
   const prevTitle = document.title;
-  document.title = `지급내역서_${currentPayout ? currentPayout.id : ''}`;
+  document.title = `${invoiceLabels(currentPayout).file}_${currentPayout ? currentPayout.id : ''}`;
   const restore = () => {
     document.title = prevTitle;
     window.removeEventListener('afterprint', restore);
