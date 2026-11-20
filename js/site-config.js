@@ -34,6 +34,7 @@
     'bok-dreamticket.store': { owner: '양정수', phone: '010-8209-5136' },
     'bokdream-ticket.shop': { owner: '김민정', phone: '010-6629-3110' },
     'no1.bokdream.store': { owner: '이승진', phone: '010-8120-0262' },
+    'bok-dream.store': { owner: '정연재', phone: '010-7560-8253' },
     // 사이트별로 상호/사업자등록번호/주소가 다르면 bizName/bizRegNo/bizAddress를
     // 추가하면 됩니다(server/site-biz-info.js에도 같은 값을 PORT 기준으로 넣어야
     // 지급내역서 PDF에도 반영됩니다).
