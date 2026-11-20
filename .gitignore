@@ -9,6 +9,7 @@ data/*.db-shm
 # 미리 채워 넣은 이전 데이터가 있는 사이트만 예외로 커밋해 둡니다.
 data/payouts-*.db
 !data/payouts-9016.db
+!data/payouts-9018.db
 !data/payouts-9019.db
 !data/payouts-9020.db
 !data/payouts-9021.db

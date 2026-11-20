@@ -24,7 +24,7 @@
     '복드림.store': { owner: '김상현', phone: '010-6497-7010' },
     // 전화번호를 아예 노출하지 않는 도메인은 phone 대신 hidePhone을 씁니다.
     'bokdreamticket.shop': { owner: '박성현', hidePhone: true },
-    'bokdream.store': { owner: '황보경애', phone: '010-6266-6699' },
+    'bokdream.store': { owner: '황보경애', phone: '010-5746-1721' },
     'bokdream1.store': { owner: '이승우', phone: '010-8140-3019' },
     '1.bokdreamticket.store': { owner: '하석태', phone: '010-5565-9634' },
     '2.bokdreamticket.store': { owner: '김택현', phone: '010-4201-5455' },
