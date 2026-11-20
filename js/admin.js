@@ -1,3 +1,10 @@
+// 주문 인보이스 상단 사업자 정보(js/site-config.js가 먼저 로드되어 도메인별 값을 넣어 둠).
+const ORDER_BIZ = window.BOKDREAM_BIZ_INFO || {
+  bizName: '복드림 상품권',
+  bizRegNo: '623-70-00295',
+  bizAddress: '서울특별시 성동구 천호대로 430, 1층 103호(용답동)',
+};
+
 // 관리자 페이지 로직. js/orders-data.js의 주문 목록과 관리자가 직접
 // 작성해 localStorage에 저장한 인보이스를 화면에 렌더링하고,
 // 인보이스 상세 + PDF(인쇄) 내보내기를 제공합니다.
@@ -436,9 +443,9 @@ function openInvoice(o) {
         <div class="invoice-no">${escapeHtml(o.invoiceNo)} · 발행일 ${fmtDate(o.createdAt)}</div>
       </div>
       <div class="invoice-brand">
-        <strong>복드림 상품권</strong>
-        사업자등록번호 623-70-00295<br>
-        서울특별시 성동구 천호대로 430, 1층 103호(용답동)
+        <strong>${escapeHtml(ORDER_BIZ.bizName)}</strong>
+        사업자등록번호 ${escapeHtml(ORDER_BIZ.bizRegNo)}<br>
+        ${escapeHtml(ORDER_BIZ.bizAddress)}
       </div>
     </div>
 

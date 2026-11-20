@@ -10,7 +10,10 @@ const DEFAULT_BIZ = {
 
 // PORT -> 오버라이드(사업자등록증이 따로 있는 사이트만 등록). 지금은 전부 기본값.
 // 예: 9025: { bizName: '...', bizRegNo: '...', bizAddress: '...' },
-const BIZ_BY_PORT = {};
+const BIZ_BY_PORT = {
+  // tm-ticket.store (TM 상품권, 대표자 장규원)
+  9030: { bizName: 'TM 상품권', bizRegNo: '551-98-00301', bizAddress: '서울특별시 구로구 새말로 97' },
+};
 
 function getBizInfo() {
   const override = BIZ_BY_PORT[process.env.PORT];

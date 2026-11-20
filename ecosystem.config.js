@@ -110,5 +110,13 @@ module.exports = {
       cwd: __dirname,
       env: { NODE_ENV: "production", PORT: 9029 },
     },
+    {
+      // 사이트 16: tm-ticket.store (TM 상품권, 대표자 장규원, 010-8173-4772)
+      // 복드림이 아닌 별도 상호. 화면은 js/site-config.js, PDF는 server/site-biz-info.js.
+      name: "bokdream-ticket-shop-16",
+      script: "server/index.js",
+      cwd: __dirname,
+      env: { NODE_ENV: "production", PORT: 9030 },
+    },
   ],
 };

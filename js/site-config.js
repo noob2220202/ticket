@@ -35,6 +35,12 @@
     'bokdream-ticket.shop': { owner: '김민정', phone: '010-6629-3110' },
     'no1.bokdream.store': { owner: '이승진', phone: '010-8120-0262' },
     'bok-dream.store': { owner: '정연재', phone: '010-7560-8253' },
+    // 상호 자체가 다른 사이트(복드림이 아닌 별도 사업자). bizName을 주면 화면의
+    // "복드림 상품권" 문구(로고·제목·푸터·저작권)가 전부 이 상호로 바뀝니다.
+    'tm-ticket.store': {
+      owner: '장규원', phone: '010-8173-4772',
+      bizName: 'TM 상품권', bizRegNo: '551-98-00301', bizAddress: '서울특별시 구로구 새말로 97',
+    },
     // 사이트별로 상호/사업자등록번호/주소가 다르면 bizName/bizRegNo/bizAddress를
     // 추가하면 됩니다(server/site-biz-info.js에도 같은 값을 PORT 기준으로 넣어야
     // 지급내역서 PDF에도 반영됩니다).
@@ -54,6 +60,30 @@
   window.BOKDREAM_BIZ_INFO = resolved;
 
   if (!SITE_CONFIG[host]) return; // 매칭 안 되면 HTML 기본값 그대로 두고 끝.
+
+  // 상호가 기본값(복드림 상품권)과 다르면 페이지 곳곳에 하드코딩된 상호 문구와
+  // 문서 제목/설명의 기본 주소도 함께 바꿉니다.
+  if (resolved.bizName !== DEFAULT_BIZ.bizName) {
+    var swap = function (text) {
+      return text.split(DEFAULT_BIZ.bizName).join(resolved.bizName)
+        .split('복드림').join(resolved.bizName.replace(/\s*상품권$/, ''));
+    };
+    document.title = swap(document.title);
+    var desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      desc.setAttribute('content', swap(desc.getAttribute('content'))
+        .split('서울특별시 성동구 천호대로 430').join(resolved.bizAddress));
+    }
+    // 로고 아이콘 글자("복")도 새 상호의 첫 글자로.
+    document.querySelectorAll('.logo-mark').forEach(function (el) {
+      el.textContent = resolved.bizName.split(' ')[0];
+    });
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    var node;
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue.indexOf('복드림') !== -1) node.nodeValue = swap(node.nodeValue);
+    }
+  }
 
   var nameEl = document.getElementById('bizName');
   if (nameEl) nameEl.textContent = resolved.bizName;
