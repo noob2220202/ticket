@@ -118,5 +118,12 @@ module.exports = {
       cwd: __dirname,
       env: { NODE_ENV: "production", PORT: 9030 },
     },
+    {
+      // 사이트 17: no1.ticketbokdream.shop ((주)에스에스에프앤비, 대표자 최봄, 전화번호 미노출)
+      name: "bokdream-ticket-shop-17",
+      script: "server/index.js",
+      cwd: __dirname,
+      env: { NODE_ENV: "production", PORT: 9031 },
+    },
   ],
 };

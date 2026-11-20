@@ -41,6 +41,11 @@
       owner: '장규원', phone: '010-8173-4772',
       bizName: 'TM 상품권', bizRegNo: '551-98-00301', bizAddress: '서울특별시 구로구 새말로 97',
     },
+    // 사이트 17: (주)에스에스에프앤비, 대표자 최봄(전화번호 미노출)
+    'no1.ticketbokdream.shop': {
+      owner: '최봄', hidePhone: true,
+      bizName: '(주)에스에스에프앤비', bizRegNo: '478-88-03080', bizAddress: '경기도 양주시 옥정동로5바길 16(옥정동)',
+    },
     // 사이트별로 상호/사업자등록번호/주소가 다르면 bizName/bizRegNo/bizAddress를
     // 추가하면 됩니다(server/site-biz-info.js에도 같은 값을 PORT 기준으로 넣어야
     // 지급내역서 PDF에도 반영됩니다).
@@ -76,7 +81,8 @@
     }
     // 로고 아이콘 글자("복")도 새 상호의 첫 글자로.
     document.querySelectorAll('.logo-mark').forEach(function (el) {
-      el.textContent = resolved.bizName.split(' ')[0];
+      var mark = resolved.bizName.replace(/\(주\)|주식회사/g, '').trim().split(' ')[0];
+      el.textContent = mark.length > 2 ? mark.charAt(0) : mark;
     });
     var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     var node;
