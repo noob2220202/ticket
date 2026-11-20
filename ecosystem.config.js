@@ -108,7 +108,7 @@ module.exports = {
       name: "bokdream-ticket-shop-15",
       script: "server/index.js",
       cwd: __dirname,
-      env: { NODE_ENV: "production", PORT: 9028 },
+      env: { NODE_ENV: "production", PORT: 9029 },
     },
   ],
 };
