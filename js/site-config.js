@@ -41,6 +41,11 @@
       owner: '장규원', phone: '010-8173-4772',
       bizName: 'TM 상품권', bizRegNo: '551-98-00301', bizAddress: '서울특별시 구로구 새말로 97',
     },
+    // 사이트 18: TM 상품권 서브도메인, 대표자 김요한
+    'no1.tm-ticket.store': {
+      owner: '김요한', phone: '010-2623-5643',
+      bizName: 'TM 상품권', bizRegNo: '551-98-00301', bizAddress: '서울특별시 구로구 새말로 97',
+    },
     // 사이트 17: (주)에스에스에프앤비, 대표자 최봄(전화번호 미노출)
     'no1.ticketbokdream.shop': {
       owner: '최봄', hidePhone: true,

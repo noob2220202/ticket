@@ -125,5 +125,12 @@ module.exports = {
       cwd: __dirname,
       env: { NODE_ENV: "production", PORT: 9031 },
     },
+    {
+      // 사이트 18: no1.tm-ticket.store (TM 상품권, 대표자 김요한, 010-2623-5643)
+      name: "bokdream-ticket-shop-18",
+      script: "server/index.js",
+      cwd: __dirname,
+      env: { NODE_ENV: "production", PORT: 9032 },
+    },
   ],
 };
