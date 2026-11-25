@@ -153,4 +153,113 @@ function renderPrintPage(p, imageUrlFor) {
 </html>`;
 }
 
-module.exports = { renderPrintPage, invoiceDocHtml };
+// ---- 주문내역서 ----
+// 같은 지급내역(payout) 1건을 "손님이 주문한 건을 업체가 관리자에서 들여다보는"
+// 주문 상세 형태로 보여줍니다. 입금 건 = 판매 주문(손님이 상품권을 구매하고 입금),
+// 출금 건 = 매입 주문(손님이 상품권을 팔고 업체가 대금을 출금).
+function orderDocHtml(p) {
+  const items = Array.isArray(p.items) ? p.items : [];
+  const face = payoutTotal(p);
+  const biz = getBizInfo();
+  const isBuy = p.sourceType === 'withdrawal';
+  const typeLabel = isBuy ? '매입' : '판매';
+  const amount = p.sourceAmount != null ? p.sourceAmount : face;
+  const rate = face ? ((face - amount) / face) * 100 : 0;
+  const totalQty = items.reduce((s, it) => s + it.qty, 0);
+
+  const itemRows = items.map((it) => `
+          <tr>
+            <td>${escapeHtml(p.brandName)}</td>
+            <td class="num">${won(it.denom)}</td>
+            <td class="num">${it.qty}개</td>
+            <td class="num">${won(it.denom * it.qty)}</td>
+          </tr>`).join('');
+
+  const pinSection = items.some((it) => it.pins.length)
+    ? items.map((it) => (it.pins.length ? `
+        <div class="payout-pin-group">
+          <div class="payout-pin-group-title">${won(it.denom)} × ${it.qty}</div>
+          <ol class="invoice-pins">${it.pins.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ol>
+        </div>` : '')).join('')
+    : '<div class="payout-none">등록된 핀번호 없음</div>';
+
+  return `
+    <div class="invoice-doc-head">
+      <div>
+        <h2>${typeLabel} 주문내역</h2>
+        <div class="invoice-no">${escapeHtml(p.orderNo || p.id)} · 주문일시 ${fmtDate(p.createdAt)}</div>
+      </div>
+      <div class="invoice-brand">
+        <strong>${escapeHtml(biz.bizName)}</strong>
+        사업자등록번호 ${escapeHtml(biz.bizRegNo)}<br>
+        ${escapeHtml(biz.bizAddress)}
+      </div>
+    </div>
+
+    <div class="invoice-section">
+      <h3>주문 정보</h3>
+      <div class="invoice-grid">
+        <div><dt>주문번호</dt><dd>${escapeHtml(p.orderNo || p.id)}</dd></div>
+        <div><dt>주문유형</dt><dd>${typeLabel} 주문</dd></div>
+        <div><dt>주문일시</dt><dd>${fmtDate(p.createdAt)}</dd></div>
+        <div><dt>처리상태</dt><dd>${isBuy ? '매입완료 · 대금 지급완료' : '결제완료 · 발송완료'}</dd></div>
+        <div><dt>${isBuy ? '지급방식' : '결제수단'}</dt><dd>계좌이체</dd></div>
+        <div><dt>${isBuy ? '지급일시' : '입금확인'}</dt><dd>${fmtDate(p.createdAt)}</dd></div>
+      </div>
+    </div>
+
+    <div class="invoice-section">
+      <h3>주문자 정보</h3>
+      <div class="invoice-grid">
+        <div><dt>주문자</dt><dd>${escapeHtml(p.customer.name)}</dd></div>
+        ${isBuy && p.accountInfo ? `<div><dt>정산 계좌</dt><dd>${escapeHtml(p.accountInfo)}</dd></div>` : ''}
+      </div>
+    </div>
+
+    <div class="invoice-section">
+      <h3>주문 상품</h3>
+      <table class="invoice-items">
+        <thead>
+          <tr>
+            <th>상품권</th>
+            <th class="num">액면가</th>
+            <th class="num">수량</th>
+            <th class="num">액면 합계</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+      <div class="invoice-total">
+        <span>총 ${totalQty}매 · 액면 합계 ${won(face)}</span>
+        <span>${isBuy ? '매입 할인율' : '할인율'} ${rate.toFixed(1)}%</span>
+        <span>${isBuy ? '지급 금액' : '결제 금액'} <strong>${won(amount)}</strong></span>
+      </div>
+    </div>
+
+    <div class="invoice-section">
+      <h3>${isBuy ? '매입한 상품권 핀번호' : '발송한 상품권 핀번호'}</h3>
+      ${pinSection}
+    </div>
+  `;
+}
+
+function renderOrderPrintPage(p) {
+  return `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+<title>주문내역_${escapeHtml(p.id)}</title>
+<style>html,body,.invoice-overlay{background:#fff !important}.invoice-overlay::before,.invoice-overlay::after,.invoice-sheet::after{display:none !important}</style>
+</head>
+<body>
+<div class="invoice-overlay"><div class="invoice-sheet"><div class="invoice-doc">${orderDocHtml(p)}</div></div></div>
+</body>
+</html>`;
+}
+
+module.exports = { renderPrintPage, invoiceDocHtml, renderOrderPrintPage, orderDocHtml };

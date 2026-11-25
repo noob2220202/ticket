@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const { ZipArchive } = require('archiver');
 const { chromium } = require('playwright');
 const db = require('./db');
-const { renderPrintPage } = require('./render-invoice');
+const { renderPrintPage, renderOrderPrintPage } = require('./render-invoice');
 
 const ROOT = path.join(__dirname, '..');
 const UPLOAD_DIR = path.join(ROOT, 'uploads');
@@ -141,6 +141,13 @@ app.get('/print/payout/:id', requireAdmin, (req, res) => {
   res.set('Content-Type', 'text/html; charset=utf-8').send(html);
 });
 
+// 같은 건을 "주문내역서"(업체가 관리자에서 보는 주문 상세) 형태로 보여줍니다.
+app.get('/print/order/:id', requireAdmin, (req, res) => {
+  const payout = db.listPayouts().find((p) => p.id === req.params.id);
+  if (!payout) return res.status(404).send('주문내역을 찾을 수 없습니다.');
+  res.set('Content-Type', 'text/html; charset=utf-8').send(renderOrderPrintPage(payout));
+});
+
 // ---- 지급내역서 일괄 PDF(ZIP) 다운로드 ----
 // 지급내역 탭의 검색창과 같은 로직(주문번호/고객명/상품권명/핀번호 매칭)으로
 // 걸러낸 뒤, 각 건을 위 /print/payout 페이지 그대로 인쇄해 PDF로 만들고
@@ -155,6 +162,8 @@ function matchesKeyword(p, keyword) {
 
 app.get('/api/payouts/export-zip', requireAdmin, async (req, res) => {
   const keyword = String(req.query.keyword || '').trim().toLowerCase();
+  // doc=order 이면 지급/구매내역서 대신 주문내역서로 인쇄합니다.
+  const docKind = req.query.doc === 'order' ? 'order' : 'payout';
   const matched = db.listPayouts().filter((p) => matchesKeyword(p, keyword));
 
   if (!matched.length) {
@@ -197,7 +206,7 @@ app.get('/api/payouts/export-zip', requireAdmin, async (req, res) => {
     const usedNames = new Set();
     for (const payout of matched) {
       const page = await context.newPage();
-      await page.goto(`http://127.0.0.1:${PORT}/print/payout/${encodeURIComponent(payout.id)}?token=${encodeURIComponent(ADMIN_PASSWORD)}`, { waitUntil: 'networkidle' });
+      await page.goto(`http://127.0.0.1:${PORT}/print/${docKind}/${encodeURIComponent(payout.id)}?token=${encodeURIComponent(ADMIN_PASSWORD)}`, { waitUntil: 'networkidle' });
       await page.emulateMedia({ media: 'print' });
       const buffer = await page.pdf({ format: 'A4', printBackground: true });
       await page.close();
@@ -205,8 +214,8 @@ app.get('/api/payouts/export-zip', requireAdmin, async (req, res) => {
       // zip 안의 파일명은 한글 대신 영문/숫자만 씁니다. 일부 압축 해제 프로그램
       // (특히 윈도우 기본 탐색기)이 zip 안의 UTF-8 파일명을 제대로 못 읽어서
       // "파일이 깨졌다"는 오류나 깨진 글자로 보이는 문제가 있었습니다.
-      let name = `payout_${payout.id}.pdf`;
-      while (usedNames.has(name)) name = `payout_${payout.id}-${crypto.randomUUID().slice(0, 4)}.pdf`;
+      let name = `${docKind}_${payout.id}.pdf`;
+      while (usedNames.has(name)) name = `${docKind}_${payout.id}-${crypto.randomUUID().slice(0, 4)}.pdf`;
       usedNames.add(name);
       archive.append(buffer, { name });
     }
