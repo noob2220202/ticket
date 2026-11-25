@@ -205,6 +205,7 @@ function orderDocHtml(p) {
         <div><dt>처리상태</dt><dd>${isBuy ? '매입완료 · 대금 지급완료' : '결제완료 · 발송완료'}</dd></div>
         <div><dt>${isBuy ? '지급방식' : '결제수단'}</dt><dd>계좌이체</dd></div>
         <div><dt>${isBuy ? '지급일시' : '입금확인'}</dt><dd>${fmtDate(p.createdAt)}</dd></div>
+        ${biz.bizAccount ? `<div><dt>${isBuy ? '출금 계좌' : '입금 계좌'}</dt><dd>${escapeHtml(biz.bizAccount)}</dd></div>` : ''}
       </div>
     </div>
 

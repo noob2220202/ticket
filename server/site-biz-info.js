@@ -14,7 +14,8 @@ const BIZ_BY_PORT = {
   // tm-ticket.store (TM 상품권, 대표자 장규원)
   9030: { bizName: 'TM 상품권', bizRegNo: '551-98-00301', bizAddress: '서울특별시 구로구 새말로 97' },
   // no1.tm-ticket.store (TM 상품권, 대표자 김요한)
-  9032: { bizName: 'TM 상품권', bizRegNo: '551-98-00301', bizAddress: '서울특별시 구로구 새말로 97' },
+  // bizAccount: 업체(대표자) 거래 계좌 — 주문내역서에 입금/출금 계좌로 표시
+  9032: { bizName: 'TM 상품권', bizRegNo: '551-98-00301', bizAddress: '서울특별시 구로구 새말로 97', bizAccount: '하나은행 484-910259-07007 (예금주 김요한)' },
   // no1.ticketbokdream.shop ((주)에스에스에프앤비, 대표자 최봄)
   9031: { bizName: '(주)에스에스에프앤비', bizRegNo: '478-88-03080', bizAddress: '경기도 양주시 옥정동로5바길 16(옥정동)' },
 };
