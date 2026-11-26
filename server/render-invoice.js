@@ -157,6 +157,7 @@ function renderPrintPage(p, imageUrlFor) {
 // 같은 지급내역(payout) 1건을 "손님이 주문한 건을 업체가 관리자에서 들여다보는"
 // 주문 상세 형태로 보여줍니다. 입금 건 = 판매 주문(손님이 상품권을 구매하고 입금),
 // 출금 건 = 매입 주문(손님이 상품권을 팔고 업체가 대금을 출금).
+// 핀번호는 매입 주문(출금)에만 표시하고, 판매 주문(입금)에는 넣지 않습니다(사용자 요청).
 function orderDocHtml(p) {
   const items = Array.isArray(p.items) ? p.items : [];
   const face = payoutTotal(p);
@@ -237,10 +238,11 @@ function orderDocHtml(p) {
       </div>
     </div>
 
+    ${isBuy ? `
     <div class="invoice-section">
-      <h3>${isBuy ? '매입한 상품권 핀번호' : '발송한 상품권 핀번호'}</h3>
+      <h3>매입한 상품권 핀번호</h3>
       ${pinSection}
-    </div>
+    </div>` : ''}
   `;
 }
 
